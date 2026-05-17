@@ -32,8 +32,9 @@ export function parseAlphaVantageDaily(
     }));
 }
 
+// Free tier only supports outputsize=compact (last 100 days); full requires premium.
 export async function fetchDailyFull(symbol: string, apiKey: string): Promise<OhlcvRecord[]> {
-  const url = `${BASE_URL}?function=TIME_SERIES_DAILY&symbol=${symbol}&outputsize=full&apikey=${apiKey}`;
+  const url = `${BASE_URL}?function=TIME_SERIES_DAILY&symbol=${symbol}&outputsize=compact&apikey=${apiKey}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Alpha Vantage fetch failed for ${symbol}: ${res.status}`);
   const json = await res.json() as Record<string, unknown>;
