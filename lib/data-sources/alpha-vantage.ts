@@ -36,6 +36,8 @@ export async function fetchDailyFull(symbol: string, apiKey: string): Promise<Oh
   const url = `${BASE_URL}?function=TIME_SERIES_DAILY&symbol=${symbol}&outputsize=full&apikey=${apiKey}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Alpha Vantage fetch failed for ${symbol}: ${res.status}`);
-  const data = await res.json() as Record<string, unknown>;
-  return parseAlphaVantageDaily(data, symbol);
+  const json = await res.json() as Record<string, unknown>;
+  if (json['Note']) throw new Error(`Alpha Vantage rate limit: ${json['Note']}`);
+  if (json['Information']) throw new Error(`Alpha Vantage API error: ${json['Information']}`);
+  return parseAlphaVantageDaily(json, symbol);
 }

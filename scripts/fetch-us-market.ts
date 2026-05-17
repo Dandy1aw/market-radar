@@ -3,6 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 import { fetchDailyFull, type OhlcvRecord } from '../lib/data-sources/alpha-vantage';
 import { calcMA, calcDrawdown1y, calcVolumeRatio, calcRiskLevel } from '../lib/indicators';
 
+const REQUIRED_ENV = ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'ALPHA_VANTAGE_API_KEY'] as const;
+for (const key of REQUIRED_ENV) {
+  if (!process.env[key]) {
+    console.error(`Missing required env var: ${key}`);
+    process.exit(1);
+  }
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -52,8 +60,8 @@ async function computeAndUpsertIndicators(symbol: string, prices: OhlcvRecord[])
     ma250: calcMA(closes.slice(0, lastIdx + 1), 250),
     ma500,
     ma1000,
-    pct_from_ma500: ma500 ? (close - ma500) / ma500 : null,
-    pct_from_ma1000: ma1000 ? (close - ma1000) / ma1000 : null,
+    pct_from_ma500: ma500 ? (close - ma500) / ma500 * 100 : null,
+    pct_from_ma1000: ma1000 ? (close - ma1000) / ma1000 * 100 : null,
     drawdown_1y: drawdown1y,
     volume_ratio: ma20Vol ? calcVolumeRatio(volumes[lastIdx], ma20Vol) : null,
     risk_level: calcRiskLevel({ close, ma500, ma1000, drawdown1y }),
