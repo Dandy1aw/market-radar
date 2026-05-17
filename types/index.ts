@@ -110,3 +110,66 @@ export interface DashboardData {
   cnSectors: RecommendationDaily[];
   dailyReport: DailyReport | null;
 }
+
+// ---- Frontend view types (mock / dashboard layer) ----
+
+export interface IndicatorCard {
+  symbol: string;
+  name: string;
+  trade_date: string;
+  close: number;
+  pct_change_1d: number | null;
+  pct_change_5d: number | null;
+  pct_change_20d: number | null;
+  ma20: number | null;
+  ma60: number | null;
+  ma250: number | null;
+  ma500: number | null;
+  ma1000: number | null;
+  pct_from_ma500: number | null;
+  pct_from_ma1000: number | null;
+  drawdown_1y: number | null;
+  volume_ratio: number | null;
+  risk_level: RiskLevel | null;
+}
+
+export interface RecommendationCard {
+  symbol: string;
+  name: string;
+  market: Market;
+  asset_type: AssetType;
+  recommendation_type: RecommendationType;
+  score: number;
+  reason: string;
+  risk: string;
+  action_suggestion: string;
+}
+
+export interface MockDashboardData {
+  trade_date: string;
+  market_status: {
+    label: string;
+    level: 'normal' | 'caution' | 'risk';
+    description: string;
+  };
+  index_cards: IndicatorCard[];
+  etf_cards: IndicatorCard[];
+  strong_watch: RecommendationCard[];
+  pullback_watch: RecommendationCard[];
+  risk_watch: RecommendationCard[];
+  cn_sectors: RecommendationCard[];
+  dca: {
+    base: { symbol: string; name: string; amount: number }[];
+    enhanced_triggered: boolean;
+    reason: string;
+  };
+  daily_report: {
+    trade_date: string;
+    market_summary: string;
+    us_summary: string;
+    etf_summary: string;
+    cn_sector_summary: string;
+    dca_suggestion: string;
+    risk_summary: string;
+  };
+}
