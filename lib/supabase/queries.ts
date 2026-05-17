@@ -54,16 +54,26 @@ function deriveMarketStatus(
   };
 }
 
+async function getLatestTradeDate(supabase: ReturnType<typeof createAdminClient>): Promise<string> {
+  const { data } = await supabase
+    .from('market_indicator_daily')
+    .select('trade_date')
+    .order('trade_date', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data?.trade_date as string) ?? new Date().toISOString().split('T')[0];
+}
+
 export async function getDashboardData(): Promise<DashboardData> {
   const supabase = createAdminClient();
-  const today = new Date().toISOString().split('T')[0];
+  const tradeDate = await getLatestTradeDate(supabase);
 
   const [indicatorsRes, watchlistRes, recommendationsRes, reportRes] =
     await Promise.all([
       supabase
         .from('market_indicator_daily')
         .select('*')
-        .eq('trade_date', today),
+        .eq('trade_date', tradeDate),
       supabase
         .from('watchlist')
         .select('symbol, name, market, asset_type')
@@ -71,12 +81,12 @@ export async function getDashboardData(): Promise<DashboardData> {
       supabase
         .from('recommendation_daily')
         .select('*')
-        .eq('trade_date', today)
+        .eq('trade_date', tradeDate)
         .order('score', { ascending: false }),
       supabase
         .from('daily_report')
         .select('*')
-        .eq('trade_date', today)
+        .eq('trade_date', tradeDate)
         .maybeSingle(),
     ]);
 
@@ -134,7 +144,7 @@ export async function getDashboardData(): Promise<DashboardData> {
   const vix = indexCards.find(i => i.symbol === 'VIX');
 
   return {
-    trade_date: today,
+    trade_date: tradeDate,
     market_status: deriveMarketStatus(ndx, vix),
     index_cards: indexCards,
     etf_cards: etfCards,
@@ -159,7 +169,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       reason: (report?.dca_suggestion as string) ?? '维持基础定投。',
     },
     daily_report: {
-      trade_date: today,
+      trade_date: tradeDate,
       market_summary: (report?.market_summary as string) ?? '',
       us_summary: (report?.us_summary as string) ?? '',
       etf_summary: (report?.etf_summary as string) ?? '',
