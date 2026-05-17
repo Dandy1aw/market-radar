@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0a0a10;
+  --bg-card: #111118;
+  --bg-card-hover: #16161f;
+  --border: #1e1e2e;
+  --text: #e8e8f0;
+  --muted: #6b7280;
+  --accent: #6366f1;
+  --positive: #22c55e;
+  --negative: #ef4444;
+  --warning: #f59e0b;
+}
+
+html {
+  background-color: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100vh;
+}
