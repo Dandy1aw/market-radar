@@ -1,5 +1,5 @@
 import type {
-  MockDashboardData,
+  DashboardData,
   IndicatorCard,
   RecommendationCard,
 } from '@/types';
@@ -122,7 +122,7 @@ const cnSectors: RecommendationCard[] = [
   },
 ];
 
-export const mockDashboard: MockDashboardData = {
+export const mockDashboard: DashboardData = {
   trade_date: TODAY,
   market_status: {
     label: '正常偏强',

@@ -96,21 +96,6 @@ export interface DailyReport {
   created_at: string;
 }
 
-export interface DashboardData {
-  tradeDate: string;
-  marketStatus: {
-    label: string;
-    level: 'normal' | 'caution' | 'risk';
-  };
-  indexCards: (MarketIndicatorDaily & { name: string })[];
-  etfCards: (MarketIndicatorDaily & { name: string })[];
-  strongWatch: RecommendationDaily[];
-  pullbackWatch: RecommendationDaily[];
-  riskWatch: RecommendationDaily[];
-  cnSectors: RecommendationDaily[];
-  dailyReport: DailyReport | null;
-}
-
 // ---- Frontend view types (mock / dashboard layer) ----
 
 export interface IndicatorCard {
@@ -145,31 +130,40 @@ export interface RecommendationCard {
   action_suggestion: string;
 }
 
-export interface MockDashboardData {
+export type MarketStatusLevel = 'normal' | 'caution' | 'risk';
+export type Sentiment = 'positive' | 'negative' | 'neutral';
+
+export interface MarketStatus {
+  label: string;
+  level: MarketStatusLevel;
+  description: string;
+}
+
+export interface DcaSuggestion {
+  base: { symbol: string; name: string; amount: number }[];
+  enhanced_triggered: boolean;
+  reason: string;
+}
+
+export interface DashboardDailyReport {
   trade_date: string;
-  market_status: {
-    label: string;
-    level: 'normal' | 'caution' | 'risk';
-    description: string;
-  };
+  market_summary: string;
+  us_summary: string;
+  etf_summary: string;
+  cn_sector_summary: string;
+  dca_suggestion: string;
+  risk_summary: string;
+}
+
+export interface DashboardData {
+  trade_date: string;
+  market_status: MarketStatus;
   index_cards: IndicatorCard[];
   etf_cards: IndicatorCard[];
   strong_watch: RecommendationCard[];
   pullback_watch: RecommendationCard[];
   risk_watch: RecommendationCard[];
   cn_sectors: RecommendationCard[];
-  dca: {
-    base: { symbol: string; name: string; amount: number }[];
-    enhanced_triggered: boolean;
-    reason: string;
-  };
-  daily_report: {
-    trade_date: string;
-    market_summary: string;
-    us_summary: string;
-    etf_summary: string;
-    cn_sector_summary: string;
-    dca_suggestion: string;
-    risk_summary: string;
-  };
+  dca: DcaSuggestion;
+  daily_report: DashboardDailyReport;
 }
