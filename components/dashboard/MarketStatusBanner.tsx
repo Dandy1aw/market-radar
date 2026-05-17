@@ -11,14 +11,14 @@ interface Props { status: MarketStatus; tradeDate: string; }
 export function MarketStatusBanner({ status, tradeDate }: Props) {
   const s = levelStyles[status.level];
   return (
-    <div className={`rounded-xl border px-4 py-3 flex items-start gap-3 ${s.bg}`}>
-      <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`} />
+    <div className={`rounded-xl border px-5 py-4 flex items-start gap-4 ${s.bg}`}>
+      <span className={`mt-2 w-2.5 h-2.5 rounded-full flex-shrink-0 ${s.dot}`} style={{ boxShadow: `0 0 8px currentColor` }} />
       <div>
-        <div className="flex items-center gap-2">
-          <span className={`text-sm font-semibold ${s.text}`}>今日市场：{status.label}</span>
-          <span className="text-xs text-[var(--muted)]">{tradeDate}</span>
+        <div className="flex items-center gap-3">
+          <span className={`text-base font-bold ${s.text}`}>今日市场：{status.label}</span>
+          <span className="text-sm text-[var(--muted)]">{tradeDate}</span>
         </div>
-        <p className="mt-0.5 text-xs text-[var(--muted)]">{status.description}</p>
+        <p className="mt-1 text-sm text-[var(--muted)] leading-relaxed">{status.description}</p>
       </div>
     </div>
   );

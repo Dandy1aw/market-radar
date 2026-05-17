@@ -15,14 +15,14 @@ export function DailyReportCard({ report }: Props) {
 
   return (
     <Card>
-      <h2 className="text-sm font-semibold text-[var(--muted)] mb-4 uppercase tracking-wider">
-        每日复盘 · {report.trade_date}
+      <h2 className="text-base font-bold text-[var(--text)] mb-4 tracking-tight">
+        每日复盘 <span className="text-sm font-normal text-[var(--muted)] ml-1">· {report.trade_date}</span>
       </h2>
-      <div className="space-y-3">
+      <div className="space-y-3.5">
         {sections.map(({ label, text }) => (
           <div key={label} className="flex gap-3">
-            <span className="flex-shrink-0 text-xs font-medium text-indigo-400 w-14 pt-0.5">{label}</span>
-            <p className="text-xs text-[var(--muted)] leading-relaxed">{text}</p>
+            <span className="flex-shrink-0 text-sm font-semibold text-indigo-400 w-16 pt-0.5">{label}</span>
+            <p className="text-sm text-[var(--muted)] leading-relaxed">{text}</p>
           </div>
         ))}
       </div>

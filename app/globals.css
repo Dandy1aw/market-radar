@@ -16,9 +16,12 @@
 html {
   background-color: var(--bg);
   color: var(--text);
+  font-size: 15px;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   min-height: 100vh;
+  line-height: 1.6;
 }
