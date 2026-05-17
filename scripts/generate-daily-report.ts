@@ -13,19 +13,29 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
+async function getLatestTradeDate(): Promise<string> {
+  const { data } = await supabase
+    .from('market_indicator_daily')
+    .select('trade_date')
+    .order('trade_date', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data?.trade_date as string) ?? new Date().toISOString().split('T')[0];
+}
+
 async function main() {
-  const today = new Date().toISOString().split('T')[0];
+  const tradeDate = await getLatestTradeDate();
 
   const [{ data: indicators }, { data: recs }] = await Promise.all([
     supabase
       .from('market_indicator_daily')
       .select('*')
-      .eq('trade_date', today)
+      .eq('trade_date', tradeDate)
       .in('symbol', ['NDX', 'SPX', 'VIX', 'QQQ', 'SPY']),
     supabase
       .from('recommendation_daily')
       .select('*')
-      .eq('trade_date', today)
+      .eq('trade_date', tradeDate)
       .order('score', { ascending: false })
       .limit(8),
   ]);
@@ -38,7 +48,7 @@ async function main() {
     .map(r => `${r.symbol}[${r.recommendation_type}, ${r.score}分]: ${r.reason}`)
     .join('\n');
 
-  const prompt = `你是一位专业的投资分析师，请根据以下数据生成今日（${today}）市场复盘。
+  const prompt = `你是一位专业的投资分析师，请根据以下数据生成今日（${tradeDate}）市场复盘。
 
 【市场指标】
 ${marketContext || '暂无数据'}
@@ -68,10 +78,10 @@ ${recContext || '暂无数据'}
 
   const { error } = await supabase
     .from('daily_report')
-    .upsert({ trade_date: today, ...reportData }, { onConflict: 'trade_date' });
+    .upsert({ trade_date: tradeDate, ...reportData }, { onConflict: 'trade_date' });
   if (error) throw error;
 
-  console.log(`✓ Daily report generated for ${today}`);
+  console.log(`✓ Daily report generated for ${tradeDate}`);
 }
 
 main().catch(console.error);

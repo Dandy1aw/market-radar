@@ -15,14 +15,24 @@ const supabase = createClient(
 
 const STOCK_SYMBOLS = ['AAPL', 'MSFT', 'NVDA', 'GOOGL', 'AMZN', 'META', 'AMD', 'AVGO', 'TSLA'];
 
+async function getLatestTradeDate(): Promise<string> {
+  const { data } = await supabase
+    .from('market_indicator_daily')
+    .select('trade_date')
+    .order('trade_date', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data?.trade_date as string) ?? new Date().toISOString().split('T')[0];
+}
+
 async function main() {
-  const today = new Date().toISOString().split('T')[0];
+  const tradeDate = await getLatestTradeDate();
   const since48h = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
 
   const { data: indicators } = await supabase
     .from('market_indicator_daily')
     .select('*')
-    .eq('trade_date', today)
+    .eq('trade_date', tradeDate)
     .in('symbol', STOCK_SYMBOLS);
 
   const { data: watchlist } = await supabase
@@ -52,7 +62,7 @@ async function main() {
     const m = meta[ind.symbol];
 
     recommendations.push({
-      trade_date: today,
+      trade_date: tradeDate,
       symbol: ind.symbol,
       name: m?.name ?? ind.symbol,
       market: m?.market ?? 'US',
@@ -76,7 +86,7 @@ async function main() {
     if (error) throw error;
   }
 
-  console.log(`Generated ${recommendations.length} recommendations for ${today}`);
+  console.log(`Generated ${recommendations.length} recommendations for ${tradeDate}`);
 }
 
 main().catch(console.error);
