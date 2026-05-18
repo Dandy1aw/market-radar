@@ -14,12 +14,12 @@ export function WatchlistTable({ rows, onChange }: { rows: Watchlist[]; onChange
   async function toggle(row: Watchlist) {
     setBusyId(row.id);
     try {
-      await fetch(`/api/watchlist/${row.id}`, {
+      const res = await fetch(`/api/watchlist/${row.id}`, {
         method: 'PATCH',
         headers: authHeaders(),
         body: JSON.stringify({ enabled: !row.enabled }),
       });
-      onChange();
+      if (res.ok) onChange();
     } finally {
       setBusyId(null);
     }
@@ -29,8 +29,8 @@ export function WatchlistTable({ rows, onChange }: { rows: Watchlist[]; onChange
     if (!confirm(`删除 ${row.symbol}?`)) return;
     setBusyId(row.id);
     try {
-      await fetch(`/api/watchlist/${row.id}`, { method: 'DELETE', headers: authHeaders() });
-      onChange();
+      const res = await fetch(`/api/watchlist/${row.id}`, { method: 'DELETE', headers: authHeaders() });
+      if (res.ok) onChange();
     } finally {
       setBusyId(null);
     }
@@ -51,6 +51,13 @@ export function WatchlistTable({ rows, onChange }: { rows: Watchlist[]; onChange
           </tr>
         </thead>
         <tbody>
+          {rows.length === 0 && (
+            <tr>
+              <td colSpan={7} className="px-3 py-8 text-center text-sm text-[var(--muted)]">
+                暂无自选股，请使用上方表单添加
+              </td>
+            </tr>
+          )}
           {rows.map(row => (
             <tr key={row.id} className="border-t border-[var(--border)]">
               <td className="px-3 py-2 font-medium text-[var(--text)]">{row.symbol}</td>
@@ -73,7 +80,7 @@ export function WatchlistTable({ rows, onChange }: { rows: Watchlist[]; onChange
                 <button
                   onClick={() => remove(row)}
                   disabled={busyId === row.id}
-                  className="text-xs text-red-500 hover:underline disabled:opacity-50"
+                  className="text-xs text-red-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   删除
                 </button>

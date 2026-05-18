@@ -1,15 +1,12 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 
 export function TokenGate({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(() =>
+    typeof window === 'undefined' ? null : localStorage.getItem('adminToken'),
+  );
   const [draft, setDraft] = useState('');
-
-  useEffect(() => {
-    const existing = typeof window === 'undefined' ? null : localStorage.getItem('adminToken');
-    setToken(existing);
-  }, []);
 
   if (token) return <>{children}</>;
 

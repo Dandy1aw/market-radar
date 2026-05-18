@@ -38,7 +38,10 @@ export function AddSymbolForm({ onAdded }: { onAdded: (row: Watchlist) => void }
   }
 
   return (
-    <div className="rounded-lg border border-[var(--border)] p-4 space-y-3">
+    <form
+      onSubmit={e => { e.preventDefault(); submit(); }}
+      className="rounded-lg border border-[var(--border)] p-4 space-y-3"
+    >
       <h3 className="text-sm font-semibold text-[var(--text)]">添加 symbol</h3>
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
         <input
@@ -80,14 +83,14 @@ export function AddSymbolForm({ onAdded }: { onAdded: (row: Watchlist) => void }
           className="col-span-2 sm:col-span-1 px-3 py-2 rounded border border-[var(--border)] bg-transparent text-sm"
         />
       </div>
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-red-400">{error}</p>}
       <button
-        onClick={submit}
+        type="submit"
         disabled={submitting}
-        className="px-4 py-2 rounded bg-[var(--text)] text-[var(--bg)] text-sm font-medium disabled:opacity-50"
+        className="px-4 py-2 rounded bg-[var(--text)] text-[var(--bg)] text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {submitting ? '提交中...' : '添加'}
       </button>
-    </div>
+    </form>
   );
 }

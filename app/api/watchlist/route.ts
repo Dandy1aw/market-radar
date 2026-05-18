@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 import { getWatchlistRows } from '@/lib/supabase/watchlist';
 import { requireAdmin } from '@/lib/auth';
 import type { Market } from '@/types';
+
+function adminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -41,13 +49,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'invalid asset_type' }, { status: 400 });
   }
 
-  const { createClient } = await import('@supabase/supabase-js');
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
-
-  const { data, error } = await supabase
+  const { data, error } = await adminClient()
     .from('watchlist')
     .insert({
       symbol,
