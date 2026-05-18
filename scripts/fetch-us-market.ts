@@ -2,6 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { fetchDailyFull, type OhlcvRecord } from '../lib/data-sources/alpha-vantage';
 import { calcMA, calcDrawdown1y, calcVolumeRatio, calcRiskLevel } from '../lib/indicators';
+import { getEnabledSymbols } from '../lib/supabase/watchlist';
 
 const REQUIRED_ENV = ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'ALPHA_VANTAGE_API_KEY'] as const;
 for (const key of REQUIRED_ENV) {
@@ -16,13 +17,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
-// Note: Alpha Vantage uses standard ticker symbols.
-// For NDX use 'NDX', for SPX use 'SPX', for VIX use 'VIX'.
-// If the API returns an error for index symbols, use ETF proxies (QQQ for NDX, SPY for SPX).
-const US_SYMBOLS = [
-  'QQQ', 'SPY', 'VOO', 'XLK', 'SMH', 'SOXX', 'TLT', 'GLD',
-  'AAPL', 'MSFT', 'NVDA', 'GOOGL', 'AMZN', 'META', 'AMD', 'AVGO', 'TSLA',
-];
 
 const API_KEY = process.env.ALPHA_VANTAGE_API_KEY!;
 
@@ -74,7 +68,13 @@ async function computeAndUpsertIndicators(symbol: string, prices: OhlcvRecord[])
 }
 
 async function main() {
-  for (const symbol of US_SYMBOLS) {
+  const symbols = await getEnabledSymbols('US');
+  if (symbols.length === 0) {
+    console.error('No enabled US symbols in watchlist. Aborting.');
+    process.exit(1);
+  }
+  console.log(`Fetching ${symbols.length} US symbols...`);
+  for (const symbol of symbols) {
     console.log(`Fetching ${symbol}...`);
     try {
       const prices = await fetchDailyFull(symbol, API_KEY);
