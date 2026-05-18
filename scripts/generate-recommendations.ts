@@ -2,6 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { calcTotalScore, deriveRecommendationType, deriveRecommendationLevel } from '../lib/recommendation-engine';
 import type { MarketIndicatorDaily, MarketNews } from '../types';
+import { getEnabledSymbols } from '../lib/supabase/watchlist';
 
 const REQUIRED_ENV = ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'] as const;
 for (const key of REQUIRED_ENV) {
@@ -12,8 +13,6 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
-
-const STOCK_SYMBOLS = ['AAPL', 'MSFT', 'NVDA', 'GOOGL', 'AMZN', 'META', 'AMD', 'AVGO', 'TSLA'];
 
 async function getLatestTradeDate(): Promise<string> {
   const { data } = await supabase
@@ -26,6 +25,12 @@ async function getLatestTradeDate(): Promise<string> {
 }
 
 async function main() {
+  const symbols = await getEnabledSymbols('US');
+  if (symbols.length === 0) {
+    console.error('No enabled US symbols in watchlist. Aborting.');
+    process.exit(1);
+  }
+
   const tradeDate = await getLatestTradeDate();
   const since48h = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
 
@@ -33,12 +38,12 @@ async function main() {
     .from('market_indicator_daily')
     .select('*')
     .eq('trade_date', tradeDate)
-    .in('symbol', STOCK_SYMBOLS);
+    .in('symbol', symbols);
 
   const { data: watchlist } = await supabase
     .from('watchlist')
     .select('symbol, name, market, asset_type')
-    .in('symbol', STOCK_SYMBOLS);
+    .in('symbol', symbols);
 
   const meta = Object.fromEntries(
     ((watchlist ?? []) as { symbol: string; name: string; market: string; asset_type: string }[])
