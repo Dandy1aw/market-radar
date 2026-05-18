@@ -2,6 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { fetchCompanyNews } from '../lib/data-sources/finnhub';
 import { summarizeNews } from '../lib/llm/client';
+import { getEnabledSymbols } from '../lib/supabase/watchlist';
 
 const REQUIRED_ENV = ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'FINNHUB_API_KEY', 'LLM_API_KEY'] as const;
 for (const key of REQUIRED_ENV) {
@@ -13,7 +14,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
-const SYMBOLS = ['AAPL', 'MSFT', 'NVDA', 'GOOGL', 'AMZN', 'META', 'AMD', 'AVGO', 'TSLA'];
 
 function dateRange(): { from: string; to: string } {
   const to = new Date();
@@ -26,10 +26,16 @@ function dateRange(): { from: string; to: string } {
 }
 
 async function main() {
+  const symbols = await getEnabledSymbols('US');
+  if (symbols.length === 0) {
+    console.error('No enabled US symbols in watchlist. Aborting.');
+    process.exit(1);
+  }
+  console.log(`Fetching news for ${symbols.length} US symbols...`);
   const { from, to } = dateRange();
   const apiKey = process.env.FINNHUB_API_KEY!;
 
-  for (const symbol of SYMBOLS) {
+  for (const symbol of symbols) {
     console.log(`Fetching news for ${symbol}...`);
     try {
       const news = await fetchCompanyNews(symbol, from, to, apiKey);
