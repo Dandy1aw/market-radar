@@ -56,26 +56,30 @@ export function AddSymbolForm({ onAdded }: { onAdded: (row: Watchlist) => void }
           onChange={e => setName(e.target.value)}
           className="col-span-2 sm:col-span-1 px-3 py-2 rounded border border-[var(--border)] bg-transparent text-sm"
         />
-        <select
-          aria-label="market"
-          value={market}
-          onChange={e => setMarket(e.target.value as Market)}
-          className="px-3 py-2 rounded border border-[var(--border)] bg-transparent text-sm"
-        >
-          <option value="US">US</option>
-          <option value="CN">CN</option>
-        </select>
-        <select
-          aria-label="asset_type"
-          value={assetType}
-          onChange={e => setAssetType(e.target.value as AssetType)}
-          className="px-3 py-2 rounded border border-[var(--border)] bg-transparent text-sm"
-        >
-          <option value="index">index</option>
-          <option value="etf">etf</option>
-          <option value="stock">stock</option>
-          <option value="sector">sector</option>
-        </select>
+        <label className="flex flex-col gap-1">
+          <span className="text-xs text-[var(--muted)]">市场</span>
+          <select
+            value={market}
+            onChange={e => setMarket(e.target.value as Market)}
+            className="px-3 py-2 rounded border border-[var(--border)] bg-[var(--bg-card)] text-sm text-[var(--text)]"
+          >
+            <option value="US">US</option>
+            <option value="CN">CN</option>
+          </select>
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-xs text-[var(--muted)]">类型</span>
+          <select
+            value={assetType}
+            onChange={e => setAssetType(e.target.value as AssetType)}
+            className="px-3 py-2 rounded border border-[var(--border)] bg-[var(--bg-card)] text-sm text-[var(--text)]"
+          >
+            <option value="index">index</option>
+            <option value="etf">etf</option>
+            <option value="stock">stock</option>
+            <option value="sector">sector</option>
+          </select>
+        </label>
         <input
           placeholder="category (可选)"
           value={category}

@@ -15,7 +15,11 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const market = searchParams.get('market') as Market | null;
+  const marketParam = searchParams.get('market');
+  if (marketParam && !['US', 'CN'].includes(marketParam)) {
+    return NextResponse.json({ error: 'market must be US or CN' }, { status: 400 });
+  }
+  const market = marketParam as Market | null;
   try {
     const rows = await getWatchlistRows(market ?? undefined);
     return NextResponse.json({ rows });

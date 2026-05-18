@@ -10,6 +10,7 @@ function authHeaders(): Record<string, string> {
 
 export function WatchlistTable({ rows, onChange }: { rows: Watchlist[]; onChange: () => void }) {
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [confirmId, setConfirmId] = useState<number | null>(null);
 
   async function toggle(row: Watchlist) {
     setBusyId(row.id);
@@ -26,7 +27,11 @@ export function WatchlistTable({ rows, onChange }: { rows: Watchlist[]; onChange
   }
 
   async function remove(row: Watchlist) {
-    if (!confirm(`删除 ${row.symbol}?`)) return;
+    if (confirmId !== row.id) {
+      setConfirmId(row.id);
+      return;
+    }
+    setConfirmId(null);
     setBusyId(row.id);
     try {
       const res = await fetch(`/api/watchlist/${row.id}`, { method: 'DELETE', headers: authHeaders() });
@@ -69,6 +74,7 @@ export function WatchlistTable({ rows, onChange }: { rows: Watchlist[]; onChange
                 <button
                   role="switch"
                   aria-checked={row.enabled}
+                  aria-label={`${row.symbol} 启用状态`}
                   disabled={busyId === row.id}
                   onClick={() => toggle(row)}
                   className={`relative inline-flex h-5 w-9 items-center rounded-full transition ${row.enabled ? 'bg-green-600' : 'bg-gray-400'}`}
@@ -77,13 +83,32 @@ export function WatchlistTable({ rows, onChange }: { rows: Watchlist[]; onChange
                 </button>
               </td>
               <td className="px-3 py-2 text-right">
-                <button
-                  onClick={() => remove(row)}
-                  disabled={busyId === row.id}
-                  className="text-xs text-red-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  删除
-                </button>
+                {confirmId === row.id ? (
+                  <span className="inline-flex items-center gap-2">
+                    <span className="text-xs text-[var(--muted)]">确认?</span>
+                    <button
+                      onClick={() => remove(row)}
+                      disabled={busyId === row.id}
+                      className="text-xs text-red-400 font-medium hover:underline disabled:opacity-50"
+                    >
+                      确认删除
+                    </button>
+                    <button
+                      onClick={() => setConfirmId(null)}
+                      className="text-xs text-[var(--muted)] hover:text-[var(--text)]"
+                    >
+                      取消
+                    </button>
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => remove(row)}
+                    disabled={busyId === row.id}
+                    className="text-xs text-[var(--muted)] hover:text-red-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    删除
+                  </button>
+                )}
               </td>
             </tr>
           ))}

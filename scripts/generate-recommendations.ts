@@ -30,6 +30,7 @@ async function main() {
     console.error('No enabled US symbols in watchlist. Aborting.');
     process.exit(1);
   }
+  console.log(`Scoring ${symbols.length} US symbols...`);
 
   const tradeDate = await getLatestTradeDate();
   const since48h = new Date(Date.now() - 48 * 3600 * 1000).toISOString();

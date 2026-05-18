@@ -32,7 +32,7 @@ export function RecommendationSection({ title, emoji, items, variant }: Props) {
   if (items.length === 0) return null;
   return (
     <section>
-      <h2 className="text-base font-bold text-[var(--text)] mb-3 flex items-center gap-2">
+      <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--muted)] mb-3 flex items-center gap-2">
         <span>{emoji}</span>{title}
         <Badge variant={variant} label={String(items.length)} className="ml-0.5" />
       </h2>

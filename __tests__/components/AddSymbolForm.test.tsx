@@ -20,8 +20,8 @@ describe('AddSymbolForm', () => {
 
     fireEvent.change(screen.getByPlaceholderText(/symbol/i), { target: { value: 'avgo' } });
     fireEvent.change(screen.getByPlaceholderText(/名称/), { target: { value: 'Broadcom' } });
-    fireEvent.change(screen.getByLabelText(/market/i), { target: { value: 'US' } });
-    fireEvent.change(screen.getByLabelText(/asset/i), { target: { value: 'stock' } });
+    fireEvent.change(screen.getByLabelText(/市场/), { target: { value: 'US' } });
+    fireEvent.change(screen.getByLabelText(/类型/), { target: { value: 'stock' } });
     fireEvent.click(screen.getByRole('button', { name: /添加/ }));
 
     await waitFor(() => expect(onAdded).toHaveBeenCalled());

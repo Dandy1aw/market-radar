@@ -1,6 +1,7 @@
 // Run via: npx tsx scripts/generate-daily-report.ts
 import { createClient } from '@supabase/supabase-js';
 import { chatCompletion } from '../lib/llm/client';
+import { getEnabledSymbols } from '../lib/supabase/watchlist';
 import type { MarketIndicatorDaily, RecommendationDaily } from '../types';
 
 const REQUIRED_ENV = ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'LLM_API_KEY'] as const;
@@ -24,6 +25,7 @@ async function getLatestTradeDate(): Promise<string> {
 }
 
 async function main() {
+  const symbols = await getEnabledSymbols('US');
   const tradeDate = await getLatestTradeDate();
 
   const [{ data: indicators }, { data: recs }] = await Promise.all([
@@ -31,7 +33,7 @@ async function main() {
       .from('market_indicator_daily')
       .select('*')
       .eq('trade_date', tradeDate)
-      .in('symbol', ['NDX', 'SPX', 'VIX', 'QQQ', 'SPY']),
+      .in('symbol', symbols),
     supabase
       .from('recommendation_daily')
       .select('*')

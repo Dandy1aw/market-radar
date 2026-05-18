@@ -21,7 +21,7 @@ export default async function DashboardPage() {
       <MarketStatusBanner status={data.market_status} tradeDate={data.trade_date} />
 
       <section>
-        <h2 className="text-base font-bold text-[var(--text)] mb-3">指数</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--muted)] mb-3">指数</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {data.index_cards.map(card => <IndexCard key={card.symbol} data={card} />)}
         </div>

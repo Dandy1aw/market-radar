@@ -36,11 +36,15 @@ describe('WatchlistTable', () => {
     expect(onChange).toHaveBeenCalled();
   });
 
-  it('clicking 删除 sends DELETE', async () => {
+  it('clicking 删除 twice (with confirm) sends DELETE', async () => {
     const onChange = jest.fn();
     render(<WatchlistTable rows={rows} onChange={onChange} />);
+    // First click shows inline confirmation
     const buttons = screen.getAllByRole('button', { name: /删除/ });
     fireEvent.click(buttons[0]);
+    // Second click on 确认删除 fires the DELETE
+    const confirmBtn = await screen.findByRole('button', { name: /确认删除/ });
+    fireEvent.click(confirmBtn);
     await waitFor(() => expect(global.fetch).toHaveBeenCalled());
     const [url, init] = (global.fetch as jest.Mock).mock.calls[0];
     expect(url).toBe('/api/watchlist/1');

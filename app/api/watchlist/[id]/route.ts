@@ -37,6 +37,9 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     .single();
 
   if (error) {
+    if (error.code === 'PGRST116') {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
     console.error('[PATCH /api/watchlist/:id]', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
