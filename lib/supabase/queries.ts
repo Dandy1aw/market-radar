@@ -16,8 +16,6 @@ function createAdminClient() {
   );
 }
 
-const INDEX_SYMBOLS = ['NDX', 'SPX', 'VIX'];
-const ETF_SYMBOLS = ['QQQ', 'SPY', 'VOO', 'XLK', 'SMH', 'SOXX', 'TLT', 'GLD'];
 
 function deriveMarketStatus(
   ndx: IndicatorCard | undefined,
@@ -96,6 +94,12 @@ export async function getDashboardData(): Promise<DashboardData> {
     ).map(w => [w.symbol, w.name]),
   );
 
+  const assetTypeMap = Object.fromEntries(
+    (
+      (watchlistRes.data ?? []) as { symbol: string; asset_type: string }[]
+    ).map(w => [w.symbol, w.asset_type]),
+  );
+
   const rawIndicators = (indicatorsRes.data ?? []) as Record<string, unknown>[];
   const indicators: IndicatorCard[] = rawIndicators.map(row => ({
     symbol: row.symbol as string,
@@ -137,8 +141,8 @@ export async function getDashboardData(): Promise<DashboardData> {
   }));
 
   const report = reportRes.data as Record<string, unknown> | null;
-  const indexCards = indicators.filter(i => INDEX_SYMBOLS.includes(i.symbol));
-  const etfCards = indicators.filter(i => ETF_SYMBOLS.includes(i.symbol));
+  const indexCards = indicators.filter(i => assetTypeMap[i.symbol] === 'index');
+  const etfCards = indicators.filter(i => assetTypeMap[i.symbol] === 'etf');
 
   const ndx = indexCards.find(i => i.symbol === 'NDX');
   const vix = indexCards.find(i => i.symbol === 'VIX');
