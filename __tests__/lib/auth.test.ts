@@ -8,7 +8,10 @@ function makeReq(authHeader: string | undefined): Request {
 
 describe('requireAdmin', () => {
   const ORIGINAL = process.env.ADMIN_TOKEN;
-  afterEach(() => { process.env.ADMIN_TOKEN = ORIGINAL; });
+  afterEach(() => {
+    if (ORIGINAL === undefined) delete process.env.ADMIN_TOKEN;
+    else process.env.ADMIN_TOKEN = ORIGINAL;
+  });
 
   it('returns 500 when ADMIN_TOKEN is not configured', () => {
     delete process.env.ADMIN_TOKEN;
