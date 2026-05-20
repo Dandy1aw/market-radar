@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS watchlist (
   category TEXT,
   enabled BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(symbol, market)
 );
 
 -- market_price_daily
@@ -119,7 +120,7 @@ INSERT INTO watchlist (symbol, name, market, asset_type, category) VALUES
   ('AMD',  'AMD',           'US', 'stock',  'semiconductor'),
   ('AVGO', '博通',          'US', 'stock',  'semiconductor'),
   ('TSLA', '特斯拉',       'US', 'stock',  'ev')
-ON CONFLICT DO NOTHING;
+ON CONFLICT (symbol, market) DO NOTHING;
 
 -- 索引
 CREATE INDEX IF NOT EXISTS idx_price_symbol_date   ON market_price_daily(symbol, trade_date DESC);
