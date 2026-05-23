@@ -1,5 +1,6 @@
 import { MarketStatusBanner } from '@/components/dashboard/MarketStatusBanner';
 import { IndexCard } from '@/components/dashboard/IndexCard';
+import { DashboardIndexCharts } from '@/components/dashboard/DashboardIndexCharts';
 import { EtfGrid } from '@/components/dashboard/EtfGrid';
 import { RecommendationSection } from '@/components/dashboard/RecommendationSection';
 import { DcaSuggestion } from '@/components/dashboard/DcaSuggestion';
@@ -26,6 +27,8 @@ export default async function DashboardPage() {
           {data.index_cards.map(card => <IndexCard key={card.symbol} data={card} />)}
         </div>
       </section>
+
+      <DashboardIndexCharts />
 
       <EtfGrid etfs={data.etf_cards} />
 
