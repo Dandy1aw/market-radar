@@ -20,7 +20,7 @@ export function OpportunityGroup({ title, cards }: OpportunityGroupProps) {
         <span className="text-xs text-[var(--muted)]">{cards.length}</span>
       </div>
       {cards.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-[var(--border)] p-4 text-sm text-[var(--muted)]">
+        <div className="rounded-xl border border-dashed border-[var(--border)] p-4 text-sm text-[var(--muted)]">
           暂无匹配标的
         </div>
       ) : (

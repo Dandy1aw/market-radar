@@ -2,6 +2,7 @@
 
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import { Card } from '@/components/ui/Card';
 import type { OpportunityCardData, OpportunityDecisionLevel } from '@/lib/opportunity/types';
 
 interface OpportunityCardProps {
@@ -30,7 +31,7 @@ export function OpportunityCard({ card }: OpportunityCardProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <article className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-4">
+    <Card>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
@@ -119,6 +120,6 @@ export function OpportunityCard({ card }: OpportunityCardProps) {
           )}
         </div>
       )}
-    </article>
+    </Card>
   );
 }
