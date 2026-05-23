@@ -24,7 +24,8 @@ function scoreEvent(event: OpportunityCompanyEvent, mixedMultiplier: number): nu
   }
 
   if (event.event_direction === 'negative') {
-    return 100 - event.importance_score;
+    // importance=0 → 50 (neutral); importance=100 → 0 (max bearish)
+    return 50 - event.importance_score / 2;
   }
 
   return 50;
@@ -81,24 +82,25 @@ export function calcPricePositionScore(
     score += 12;
   } else if (drawdown1y != null && drawdown1y <= -5) {
     score += 6;
-  } else if (drawdown1y != null && drawdown1y > -3) {
+  } else if (drawdown1y != null && drawdown1y > -5) {
     score -= 8;
   }
 
   if (pctFromMa500 != null) {
-    const maDistance = Math.abs(pctFromMa500);
     if (pctFromMa500 <= -20) {
       score -= 25;
-    } else if (maDistance <= 5) {
+    } else if (pctFromMa500 < 0) {
+      // below MA500 but not catastrophic — no bonus
+    } else if (pctFromMa500 <= 5) {
       score += 15;
-    } else if (maDistance <= 12) {
+    } else if (pctFromMa500 <= 12) {
       score += 8;
-    } else if (maDistance <= 20) {
+    } else if (pctFromMa500 < 20) {
       score += 2;
-    } else if (pctFromMa500 >= 25) {
-      score -= 18;
-    } else if (pctFromMa500 >= 20) {
+    } else if (pctFromMa500 < 25) {
       score -= 8;
+    } else {
+      score -= 18;
     }
   }
 

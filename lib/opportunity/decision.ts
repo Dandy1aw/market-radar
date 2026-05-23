@@ -158,6 +158,7 @@ export function groupOpportunityCards(
       strong_watch: groups.strong_watch.length,
       pullback_candidate: groups.pullback_candidate.length,
       risk_high: groups.risk_high.length,
+      other: groups.other.length,
     },
     groups,
   };
@@ -279,6 +280,6 @@ function getLatestTimestamp(
 function getLatestCardTimestamp(cards: OpportunityCardData[]): string {
   return (
     cards.map(card => card.updated_at).sort().at(-1) ??
-    new Date(0).toISOString()
+    new Date().toISOString()
   );
 }

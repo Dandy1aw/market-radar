@@ -129,6 +129,7 @@ export interface OpportunityApiResponse {
     strong_watch: number;
     pullback_candidate: number;
     risk_high: number;
+    other: number;
   };
   groups: {
     strong_watch: OpportunityCardData[];
