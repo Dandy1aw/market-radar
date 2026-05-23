@@ -22,6 +22,7 @@ describe('GET /api/opportunity', () => {
 
     expect(response.status).toBe(200);
     expect(body.summary.total).toBe(5);
+    expect(body.groups.pullback_candidate.length).toBeGreaterThanOrEqual(1);
     expect(body.groups.risk_high.length).toBeGreaterThanOrEqual(1);
     expect(
       [
