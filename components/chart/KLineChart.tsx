@@ -5,16 +5,24 @@ import type { ChartApiResponse } from '@/types';
 
 interface KLineChartProps {
   data: ChartApiResponse | null;
+  height?: number;
   loading: boolean;
+  compact?: boolean;
 }
 
-const CHART_HEIGHT = 500;
+const DEFAULT_CHART_HEIGHT = 500;
 
-export function KLineChart({ data, loading }: KLineChartProps) {
+export function KLineChart({
+  compact = false,
+  data,
+  height = DEFAULT_CHART_HEIGHT,
+  loading,
+}: KLineChartProps) {
   if (loading) {
     return (
       <div
-        className="h-[500px] w-full rounded-lg bg-[var(--bg-subtle)] animate-pulse"
+        className="w-full rounded-lg bg-[var(--bg-subtle)] animate-pulse"
+        style={{ height }}
         aria-label="Loading chart"
       />
     );
@@ -22,7 +30,10 @@ export function KLineChart({ data, loading }: KLineChartProps) {
 
   if (!data || data.candles.length === 0) {
     return (
-      <div className="flex h-[500px] w-full items-center justify-center rounded-lg border border-[var(--border)] text-sm text-[var(--muted)]">
+      <div
+        className="flex w-full items-center justify-center rounded-lg border border-[var(--border)] text-sm text-[var(--muted)]"
+        style={{ height }}
+      >
         暂无 K 线数据
       </div>
     );
@@ -40,12 +51,31 @@ export function KLineChart({ data, loading }: KLineChartProps) {
     itemStyle: { color: candle.close >= candle.open ? '#ef4444' : '#22c55e' },
   }));
 
+  const volumeGridTop = Math.max(height - (compact ? 70 : 110), 220);
+  const volumeGridBottom = compact ? 22 : 60;
+  const mainGridBottom = compact ? 82 : 150;
+  const dataZoom = compact
+    ? [{ type: 'inside', xAxisIndex: [0, 1], start: 0, end: 100 }]
+    : [
+        { type: 'inside', xAxisIndex: [0, 1], start: 0, end: 100 },
+        {
+          type: 'slider',
+          xAxisIndex: [0, 1],
+          bottom: 12,
+          height: 28,
+          borderColor: 'rgba(255,255,255,0.12)',
+          fillerColor: 'rgba(99,102,241,0.18)',
+          handleStyle: { color: '#6366f1' },
+          textStyle: { color: '#9ca3af' },
+        },
+      ];
+
   const option = {
     backgroundColor: 'transparent',
     animation: false,
     legend: {
       data: ['MA20', 'MA60', 'MA250'],
-      top: 4,
+      top: compact ? 0 : 4,
       right: 8,
       textStyle: { color: '#9ca3af' },
     },
@@ -57,8 +87,8 @@ export function KLineChart({ data, loading }: KLineChartProps) {
       textStyle: { color: '#e8e8f0', fontSize: 12 },
     },
     grid: [
-      { left: 8, right: 48, top: 40, bottom: 150 },
-      { left: 8, right: 48, top: 390, bottom: 60 },
+      { left: 8, right: 48, top: compact ? 34 : 40, bottom: mainGridBottom },
+      { left: 8, right: 48, top: volumeGridTop, bottom: volumeGridBottom },
     ],
     xAxis: [
       {
@@ -94,19 +124,7 @@ export function KLineChart({ data, loading }: KLineChartProps) {
         splitLine: { show: false },
       },
     ],
-    dataZoom: [
-      { type: 'inside', xAxisIndex: [0, 1], start: 0, end: 100 },
-      {
-        type: 'slider',
-        xAxisIndex: [0, 1],
-        bottom: 12,
-        height: 28,
-        borderColor: 'rgba(255,255,255,0.12)',
-        fillerColor: 'rgba(99,102,241,0.18)',
-        handleStyle: { color: '#6366f1' },
-        textStyle: { color: '#9ca3af' },
-      },
-    ],
+    dataZoom,
     series: [
       {
         name: 'K Line',
@@ -149,7 +167,7 @@ export function KLineChart({ data, loading }: KLineChartProps) {
         xAxisIndex: 1,
         yAxisIndex: 1,
         data: volumes,
-        barMaxWidth: 8,
+        barMaxWidth: compact ? 6 : 8,
       },
     ],
   };
@@ -158,7 +176,7 @@ export function KLineChart({ data, loading }: KLineChartProps) {
     <div role="img" aria-label={`${data.symbol} K-line chart`}>
       <ReactECharts
         option={option}
-        style={{ height: CHART_HEIGHT, width: '100%' }}
+        style={{ height, width: '100%' }}
         opts={{ renderer: 'canvas' }}
       />
     </div>

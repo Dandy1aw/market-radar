@@ -7,13 +7,21 @@ import type { ChartApiResponse } from '@/types';
 
 jest.mock('@/components/chart/KLineChart', () => ({
   KLineChart: ({
+    compact,
     data,
+    height,
     loading,
   }: {
+    compact?: boolean;
     data: ChartApiResponse | null;
+    height?: number;
     loading: boolean;
   }) => (
-    <div data-testid={`chart-${data?.symbol ?? 'loading'}`}>
+    <div
+      data-testid={`chart-${data?.symbol ?? 'loading'}`}
+      data-compact={String(compact)}
+      data-height={String(height)}
+    >
       {loading ? 'loading' : data?.symbol}
     </div>
   ),
@@ -63,10 +71,16 @@ describe('DashboardIndexCharts', () => {
       });
     });
 
-    expect(screen.getByText('纳指 K线')).toBeInTheDocument();
-    expect(screen.getByText('标普500 K线')).toBeInTheDocument();
-    expect(await screen.findByTestId('chart-NDX')).toBeInTheDocument();
-    expect(await screen.findByTestId('chart-SPX')).toBeInTheDocument();
+    expect(screen.getByText('NDX')).toBeInTheDocument();
+    expect(screen.getByText('SPX')).toBeInTheDocument();
+    expect(await screen.findByTestId('chart-NDX')).toHaveAttribute(
+      'data-height',
+      '340',
+    );
+    expect(await screen.findByTestId('chart-SPX')).toHaveAttribute(
+      'data-compact',
+      'true',
+    );
   });
 
   it('shows a retry action when either chart fails', async () => {

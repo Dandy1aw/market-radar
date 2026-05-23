@@ -101,7 +101,12 @@ export function DashboardIndexCharts() {
                 {item.symbol}
               </span>
             </div>
-            <KLineChart data={charts[item.symbol] ?? null} loading={loading} />
+            <KLineChart
+              compact
+              data={charts[item.symbol] ?? null}
+              height={340}
+              loading={loading}
+            />
           </div>
         ))}
       </div>
