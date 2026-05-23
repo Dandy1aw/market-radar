@@ -11,7 +11,11 @@ import {
   seedIndicators,
   seedRawNews,
 } from '@/lib/opportunity/seed';
-import type { OpportunityCardData } from '@/lib/opportunity/types';
+import type {
+  OpportunityCardData,
+  OpportunityCompanyEvent,
+  OpportunityContextEntity,
+} from '@/lib/opportunity/types';
 
 describe('opportunity decisions', () => {
   it('high risk overrides positive news', () => {
@@ -50,6 +54,18 @@ describe('opportunity decisions', () => {
     ).toBe('small_probe');
   });
 
+  it('does not make extended price positions small probe candidates', () => {
+    expect(
+      deriveDecisionLevel({
+        total_score: 75,
+        news_score: 69,
+        price_position_score: 44,
+        context_signal_score: 100,
+        risk_score: 0,
+      }),
+    ).toBe('strong_watch');
+  });
+
   it('provides Chinese labels for each decision level', () => {
     expect(opportunityDecisionLabels.risk_high).toBe('风险过高');
     expect(opportunityDecisionLabels.pullback_candidate).toBe('回调买入候选');
@@ -72,6 +88,58 @@ describe('opportunity decisions', () => {
       'SMH',
     ]);
     expect(cards.some(card => card.symbol === 'Samsung Memory')).toBe(false);
+  });
+
+  it('maps context events by company name when related symbol is absent', () => {
+    const samsungEvent = seedCompanyEvents.find(
+      event => event.symbol === 'Samsung Memory',
+    )!;
+    const samsungSymbolEvent: OpportunityCompanyEvent = {
+      ...samsungEvent,
+      id: 200,
+      symbol: 'SSNLF',
+      company_name: 'Samsung Memory',
+    };
+
+    const cards = buildOpportunityCards({
+      coreTargets: seedCoreWatchlist,
+      context: seedContext,
+      events: [samsungSymbolEvent],
+      indicators: seedIndicators,
+      rawNews: seedRawNews,
+    });
+    const muCard = cards.find(card => card.symbol === 'MU');
+
+    expect(muCard?.evidence_events).toEqual([samsungSymbolEvent]);
+    expect(muCard?.context_signal_score).toBe(78);
+  });
+
+  it('deduplicates evidence events that match directly and through context', () => {
+    const muEvent = seedCompanyEvents.find(event => event.symbol === 'MU')!;
+    const muSelfContext: OpportunityContextEntity = {
+      id: 200,
+      core_symbol: 'MU',
+      related_symbol: 'MU',
+      related_name: 'Micron Technology',
+      market: 'US',
+      relation_type: 'industry_signal',
+      relation_strength: 1,
+      reason: 'Synthetic duplicate-match context.',
+      is_active: true,
+      created_at: '2026-05-23T08:00:00.000Z',
+      updated_at: '2026-05-23T08:00:00.000Z',
+    };
+
+    const cards = buildOpportunityCards({
+      coreTargets: seedCoreWatchlist,
+      context: [muSelfContext],
+      events: [muEvent],
+      indicators: seedIndicators,
+      rawNews: seedRawNews,
+    });
+    const muCard = cards.find(card => card.symbol === 'MU');
+
+    expect(muCard?.evidence_events).toEqual([muEvent]);
   });
 
   it('groups cards by decision level', () => {

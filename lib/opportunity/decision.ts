@@ -42,7 +42,11 @@ export function deriveDecisionLevel(
     return 'pullback_candidate';
   }
 
-  if (scores.total_score >= 75 && scores.risk_score < 50) {
+  if (
+    scores.total_score >= 75 &&
+    scores.risk_score < 50 &&
+    scores.price_position_score >= 55
+  ) {
     return 'small_probe';
   }
 
@@ -87,10 +91,11 @@ export function buildOpportunityCards({
         entity =>
           entity.core_symbol === target.symbol &&
           (event.symbol === entity.related_name ||
-            event.symbol === entity.related_symbol),
+            event.symbol === entity.related_symbol ||
+            event.company_name === entity.related_name),
       ),
     );
-    const evidenceEvents = [...directEvents, ...contextEvents];
+    const evidenceEvents = dedupeEventsById([...directEvents, ...contextEvents]);
     const evidenceNews = collectEvidenceNews(evidenceEvents, newsById);
     const scores = calcOpportunityScores({
       indicator,
@@ -156,6 +161,21 @@ export function groupOpportunityCards(
     },
     groups,
   };
+}
+
+function dedupeEventsById(
+  events: OpportunityCompanyEvent[],
+): OpportunityCompanyEvent[] {
+  const seen = new Set<number>();
+
+  return events.filter(event => {
+    if (seen.has(event.id)) {
+      return false;
+    }
+
+    seen.add(event.id);
+    return true;
+  });
 }
 
 function collectEvidenceNews(
