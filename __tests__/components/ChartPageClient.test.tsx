@@ -21,6 +21,18 @@ jest.mock('@/components/chart/NewsSection', () => ({
   ),
 }));
 
+jest.mock('@/components/strategy/StrategySignalGrid', () => ({
+  StrategySignalGrid: ({
+    signals,
+  }: {
+    signals: { title: string }[];
+  }) => (
+    <div data-testid="strategy-signals">
+      {signals.map(signal => signal.title).join(',')}
+    </div>
+  ),
+}));
+
 const indicator: IndicatorCard = {
   symbol: 'NDX',
   name: 'Nasdaq 100',
@@ -93,5 +105,15 @@ describe('ChartPageClient', () => {
 
     expect(await screen.findByText('加载失败：HTTP 500')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '重试' })).toBeInTheDocument();
+  });
+
+  it('renders strategy signals for the current indicator', async () => {
+    render(<ChartPageClient symbol="NDX" indicator={indicator} news={[]} />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('strategy-signals')).toHaveTextContent(
+        '趋势,回撤,风险,动作',
+      );
+    });
   });
 });

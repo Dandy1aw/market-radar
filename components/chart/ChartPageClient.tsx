@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { StrategySignalGrid } from '@/components/strategy/StrategySignalGrid';
 import { Badge } from '@/components/ui/Badge';
+import { deriveIndicatorSignals } from '@/lib/strategy-signals';
 import { formatPct, formatPrice, getPctColor, getRiskLabel } from '@/lib/utils';
 import type {
   ChartApiResponse,
@@ -82,6 +84,7 @@ export function ChartPageClient({
     { label: '距 MA500', value: indicator.pct_from_ma500 },
     { label: '年内回撤', value: indicator.drawdown_1y },
   ];
+  const strategySignals = deriveIndicatorSignals(indicator);
 
   return (
     <div className="space-y-6">
@@ -163,6 +166,16 @@ export function ChartPageClient({
             </div>
           ) : null,
         )}
+      </section>
+
+      <section aria-labelledby="strategy-signals-title">
+        <h2
+          id="strategy-signals-title"
+          className="mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--muted)]"
+        >
+          策略信号
+        </h2>
+        <StrategySignalGrid signals={strategySignals} />
       </section>
 
       <NewsSection news={news} />

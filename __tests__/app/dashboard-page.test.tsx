@@ -1,6 +1,7 @@
 import DashboardPage from '@/app/page';
 import { mockDashboard } from '@/lib/mock-data';
 import { DashboardIndexCharts } from '@/components/dashboard/DashboardIndexCharts';
+import { TodayStrategyCard } from '@/components/dashboard/TodayStrategyCard';
 import type { ReactElement } from 'react';
 
 jest.mock('@/components/dashboard/MarketStatusBanner', () => ({
@@ -11,6 +12,9 @@ jest.mock('@/components/dashboard/IndexCard', () => ({
 }));
 jest.mock('@/components/dashboard/DashboardIndexCharts', () => ({
   DashboardIndexCharts: () => <div data-testid="dashboard-index-charts" />,
+}));
+jest.mock('@/components/dashboard/TodayStrategyCard', () => ({
+  TodayStrategyCard: () => <div data-testid="today-strategy-card" />,
 }));
 jest.mock('@/components/dashboard/EtfGrid', () => ({
   EtfGrid: () => <div data-testid="etf-grid" />,
@@ -45,6 +49,7 @@ describe('DashboardPage', () => {
     expect(children.some(child => child.type === DashboardIndexCharts)).toBe(
       true,
     );
+    expect(children.some(child => child.type === TodayStrategyCard)).toBe(true);
     expect(global.fetch).toHaveBeenCalledWith('http://localhost:3000/api/dashboard', {
       cache: 'no-store',
     });
