@@ -2,17 +2,17 @@ import type { OpportunityCardData } from '@/lib/opportunity/types';
 import { OpportunityCard } from './OpportunityCard';
 
 interface OpportunityGroupProps {
+  groupKey: string;
   title: string;
   cards: OpportunityCardData[];
 }
 
-export function OpportunityGroup({ title, cards }: OpportunityGroupProps) {
-  const slug = title.replace(/[^\w]+/g, '-');
+export function OpportunityGroup({ groupKey, title, cards }: OpportunityGroupProps) {
   return (
-    <section aria-labelledby={`${slug}-title`} className="space-y-3">
+    <section aria-labelledby={`${groupKey}-title`} className="space-y-3">
       <div className="flex items-center justify-between">
         <h2
-          id={`${slug}-title`}
+          id={`${groupKey}-title`}
           className="text-xs font-semibold uppercase tracking-widest text-[var(--muted)]"
         >
           {title}

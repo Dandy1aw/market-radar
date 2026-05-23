@@ -28,10 +28,10 @@ export default async function OpportunityPage() {
 
       <OpportunitySummaryBar data={data} />
 
-      <OpportunityGroup title="回调买入候选" cards={data.groups.pullback_candidate} />
-      <OpportunityGroup title="继续强关注" cards={data.groups.strong_watch} />
-      <OpportunityGroup title="风险过高" cards={data.groups.risk_high} />
-      <OpportunityGroup title="其他观察" cards={data.groups.other} />
+      <OpportunityGroup groupKey="pullback-candidate" title="回调买入候选" cards={data.groups.pullback_candidate} />
+      <OpportunityGroup groupKey="strong-watch" title="继续强关注" cards={data.groups.strong_watch} />
+      <OpportunityGroup groupKey="risk-high" title="风险过高" cards={data.groups.risk_high} />
+      <OpportunityGroup groupKey="other" title="其他观察" cards={data.groups.other} />
     </div>
   );
 }

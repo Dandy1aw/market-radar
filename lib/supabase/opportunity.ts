@@ -1,4 +1,3 @@
-import { createClient } from '@supabase/supabase-js';
 import {
   seedCompanyEvents,
   seedContext,
@@ -12,22 +11,6 @@ import {
 } from '@/lib/opportunity/decision';
 import type { OpportunityApiResponse } from '@/lib/opportunity/types';
 
-function hasSupabaseConfig() {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') &&
-      process.env.SUPABASE_SERVICE_ROLE_KEY &&
-      !process.env.SUPABASE_SERVICE_ROLE_KEY.includes('placeholder'),
-  );
-}
-
-function createAdminClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } },
-  );
-}
 
 export function getSeedOpportunityData(): OpportunityApiResponse {
   const cards = buildOpportunityCards({
@@ -41,21 +24,8 @@ export function getSeedOpportunityData(): OpportunityApiResponse {
   return groupOpportunityCards(cards);
 }
 
+// MVP always uses seed data. Supabase mapping will be added once the
+// opportunity_decision table and ingestion pipeline exist.
 export async function getOpportunityData(): Promise<OpportunityApiResponse> {
-  if (!hasSupabaseConfig()) {
-    return getSeedOpportunityData();
-  }
-
-  const supabase = createAdminClient();
-  const { data, error } = await supabase
-    .from('opportunity_decision')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(20);
-
-  if (error || !data || data.length === 0) {
-    return getSeedOpportunityData();
-  }
-
   return getSeedOpportunityData();
 }
