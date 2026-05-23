@@ -11,6 +11,7 @@ import {
   seedIndicators,
   seedRawNews,
 } from '@/lib/opportunity/seed';
+import type { OpportunityCardData } from '@/lib/opportunity/types';
 
 describe('opportunity decisions', () => {
   it('high risk overrides positive news', () => {
@@ -84,7 +85,56 @@ describe('opportunity decisions', () => {
     const grouped = groupOpportunityCards(cards);
 
     expect(grouped.summary.total).toBe(cards.length);
-    expect(grouped.groups.pullback_candidate.length).toBeGreaterThanOrEqual(1);
     expect(grouped.groups.risk_high.length).toBeGreaterThanOrEqual(1);
+    expect(
+      grouped.groups.strong_watch.every(
+        card => card.decision_level === 'strong_watch',
+      ),
+    ).toBe(true);
+    expect(
+      grouped.groups.pullback_candidate.every(
+        card => card.decision_level === 'pullback_candidate',
+      ),
+    ).toBe(true);
+    expect(
+      grouped.groups.risk_high.every(card => card.decision_level === 'risk_high'),
+    ).toBe(true);
+    expect(
+      grouped.groups.other.every(
+        card =>
+          !['strong_watch', 'pullback_candidate', 'risk_high'].includes(
+            card.decision_level,
+          ),
+      ),
+    ).toBe(true);
+  });
+
+  it('does not place risk-high pullback-like cards in pullback candidates', () => {
+    const riskHighPullbackLikeCard: OpportunityCardData = {
+      symbol: 'RISK',
+      company_name: 'Risk High Candidate',
+      asset_type: 'stock',
+      market: 'US',
+      theme: 'synthetic regression',
+      decision_level: 'risk_high',
+      decision_label: opportunityDecisionLabels.risk_high,
+      total_score: 78,
+      news_score: 88,
+      price_position_score: 30,
+      context_signal_score: 70,
+      risk_score: 82,
+      summary: 'Synthetic risk-high card.',
+      watch_conditions: [],
+      risk_factors: ['综合风险分过高'],
+      evidence_events: [],
+      evidence_news: [],
+      updated_at: '2026-05-23T08:00:00.000Z',
+    };
+
+    const grouped = groupOpportunityCards([riskHighPullbackLikeCard]);
+
+    expect(grouped.groups.risk_high).toEqual([riskHighPullbackLikeCard]);
+    expect(grouped.groups.pullback_candidate).toEqual([]);
+    expect(grouped.groups.other).toEqual([]);
   });
 });

@@ -131,20 +131,18 @@ export function groupOpportunityCards(
   };
 
   for (const card of cards) {
-    if (card.decision_level === 'strong_watch') {
-      groups.strong_watch.push(card);
-    }
-
-    if (card.decision_level === 'pullback_candidate' || isPullbackSetup(card)) {
-      groups.pullback_candidate.push(card);
-    }
-
-    if (card.decision_level === 'risk_high') {
-      groups.risk_high.push(card);
-    }
-
-    if (!isPrimaryGroup(card)) {
-      groups.other.push(card);
+    switch (card.decision_level) {
+      case 'strong_watch':
+        groups.strong_watch.push(card);
+        break;
+      case 'pullback_candidate':
+        groups.pullback_candidate.push(card);
+        break;
+      case 'risk_high':
+        groups.risk_high.push(card);
+        break;
+      default:
+        groups.other.push(card);
     }
   }
 
@@ -158,18 +156,6 @@ export function groupOpportunityCards(
     },
     groups,
   };
-}
-
-function isPullbackSetup(card: OpportunityCardData): boolean {
-  return card.news_score >= 70 && card.price_position_score < 45;
-}
-
-function isPrimaryGroup(card: OpportunityCardData): boolean {
-  return (
-    card.decision_level === 'strong_watch' ||
-    card.decision_level === 'pullback_candidate' ||
-    card.decision_level === 'risk_high'
-  );
 }
 
 function collectEvidenceNews(
