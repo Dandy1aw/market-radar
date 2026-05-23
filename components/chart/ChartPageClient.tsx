@@ -43,9 +43,6 @@ export function ChartPageClient({
   useEffect(() => {
     let active = true;
 
-    setLoading(true);
-    setError(null);
-
     fetch(`/api/chart/${symbol}?range=${range}`, { cache: 'no-store' })
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -65,6 +62,19 @@ export function ChartPageClient({
       active = false;
     };
   }, [symbol, range, retryCount]);
+
+  function handleRangeChange(nextRange: ChartRange) {
+    if (nextRange === range) return;
+    setLoading(true);
+    setError(null);
+    setRange(nextRange);
+  }
+
+  function handleRetry() {
+    setLoading(true);
+    setError(null);
+    setRetryCount(count => count + 1);
+  }
 
   const stats = [
     { label: '5日涨跌', value: indicator.pct_change_5d },
@@ -118,7 +128,7 @@ export function ChartPageClient({
       </header>
 
       <div className="flex items-center justify-between gap-3">
-        <RangeSelector value={range} onChange={setRange} />
+        <RangeSelector value={range} onChange={handleRangeChange} />
       </div>
 
       {error ? (
@@ -126,7 +136,7 @@ export function ChartPageClient({
           <span>加载失败：{error}</span>
           <button
             type="button"
-            onClick={() => setRetryCount(count => count + 1)}
+            onClick={handleRetry}
             className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[var(--border)] px-3 text-xs font-medium text-[var(--text)] transition-colors hover:bg-[var(--bg-card-hover)]"
           >
             <RotateCcw size={14} aria-hidden="true" />
