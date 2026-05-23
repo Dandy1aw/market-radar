@@ -39,12 +39,11 @@ describe('opportunity seed data', () => {
   });
 
   it('provides indicator snapshots for every core target', () => {
-    const indicatorSymbols = new Set(
-      seedIndicators.map(indicator => indicator.symbol),
-    );
+    const coreSymbols = seedCoreWatchlist.map(target => target.symbol).sort();
+    const indicatorSymbols = seedIndicators
+      .map(indicator => indicator.symbol)
+      .sort();
 
-    for (const target of seedCoreWatchlist) {
-      expect(indicatorSymbols.has(target.symbol)).toBe(true);
-    }
+    expect(indicatorSymbols).toEqual(coreSymbols);
   });
 });
