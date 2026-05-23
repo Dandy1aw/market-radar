@@ -49,65 +49,72 @@ export function calcContextSignalScore(events: OpportunityCompanyEvent[]): numbe
 export function isPriceOverheated(
   indicator: OpportunityIndicatorSnapshot,
 ): boolean {
-  const pctChange20d = indicator.pct_change_20d ?? 0;
-  const pctFromMa500 = indicator.pct_from_ma500 ?? 0;
-  const volumeRatio = indicator.volume_ratio ?? 0;
-  const drawdown1y = indicator.drawdown_1y ?? 0;
+  const pctChange20d = indicator.pct_change_20d;
+  const pctFromMa500 = indicator.pct_from_ma500;
+  const volumeRatio = indicator.volume_ratio;
+  const drawdown1y = indicator.drawdown_1y;
 
   return (
-    pctChange20d >= 12 ||
-    pctFromMa500 >= 25 ||
-    (volumeRatio >= 1.5 && drawdown1y > -5)
+    (pctChange20d != null && pctChange20d >= 12) ||
+    (pctFromMa500 != null && pctFromMa500 >= 25) ||
+    (volumeRatio != null &&
+      volumeRatio >= 1.5 &&
+      drawdown1y != null &&
+      drawdown1y > -5)
   );
 }
 
 export function calcPricePositionScore(
   indicator: OpportunityIndicatorSnapshot,
 ): number {
-  const pctChange5d = indicator.pct_change_5d ?? 0;
-  const pctChange20d = indicator.pct_change_20d ?? 0;
-  const pctFromMa500 = indicator.pct_from_ma500 ?? 0;
-  const drawdown1y = indicator.drawdown_1y ?? 0;
-  const volumeRatio = indicator.volume_ratio ?? 0;
+  const pctChange5d = indicator.pct_change_5d;
+  const pctChange20d = indicator.pct_change_20d;
+  const pctFromMa500 = indicator.pct_from_ma500;
+  const drawdown1y = indicator.drawdown_1y;
+  const volumeRatio = indicator.volume_ratio;
 
   let score = 55;
 
-  if (drawdown1y <= -20) {
+  if (drawdown1y != null && drawdown1y <= -20) {
     score += 20;
-  } else if (drawdown1y <= -10) {
+  } else if (drawdown1y != null && drawdown1y <= -10) {
     score += 12;
-  } else if (drawdown1y <= -5) {
+  } else if (drawdown1y != null && drawdown1y <= -5) {
     score += 6;
-  } else if (drawdown1y > -3) {
+  } else if (drawdown1y != null && drawdown1y > -3) {
     score -= 8;
   }
 
-  const maDistance = Math.abs(pctFromMa500);
-  if (maDistance <= 5) {
-    score += 15;
-  } else if (maDistance <= 12) {
-    score += 8;
-  } else if (maDistance <= 20) {
-    score += 2;
-  } else if (pctFromMa500 >= 25) {
-    score -= 18;
-  } else if (pctFromMa500 >= 20) {
-    score -= 8;
+  if (pctFromMa500 != null) {
+    const maDistance = Math.abs(pctFromMa500);
+    if (pctFromMa500 <= -20) {
+      score -= 25;
+    } else if (maDistance <= 5) {
+      score += 15;
+    } else if (maDistance <= 12) {
+      score += 8;
+    } else if (maDistance <= 20) {
+      score += 2;
+    } else if (pctFromMa500 >= 25) {
+      score -= 18;
+    } else if (pctFromMa500 >= 20) {
+      score -= 8;
+    }
   }
 
-  if (pctChange20d >= 15) {
+  if (pctChange20d != null && pctChange20d >= 15) {
     score -= 18;
-  } else if (pctChange20d >= 12) {
+  } else if (pctChange20d != null && pctChange20d >= 12) {
     score -= 12;
-  } else if (pctChange20d >= 8) {
+  } else if (pctChange20d != null && pctChange20d >= 8) {
     score -= 6;
   }
 
-  if (pctChange5d >= 6) {
+  if (pctChange5d != null && pctChange5d >= 6) {
     score -= 6;
   }
 
-  if (volumeRatio >= 1.5) {
+  if (volumeRatio != null && volumeRatio >= 1.5) {
     score -= 6;
   }
 
@@ -115,44 +122,44 @@ export function calcPricePositionScore(
 }
 
 export function calcRiskScore(indicator: OpportunityIndicatorSnapshot): number {
-  const pctChange20d = indicator.pct_change_20d ?? 0;
-  const pctFromMa500 = indicator.pct_from_ma500 ?? 0;
-  const volumeRatio = indicator.volume_ratio ?? 0;
-  const drawdown1y = indicator.drawdown_1y ?? 0;
+  const pctChange20d = indicator.pct_change_20d;
+  const pctFromMa500 = indicator.pct_from_ma500;
+  const volumeRatio = indicator.volume_ratio;
+  const drawdown1y = indicator.drawdown_1y;
 
   let score = 20;
 
   if (indicator.risk_level === 'medium') {
-    score += 15;
+    score += 25;
   } else if (indicator.risk_level === 'high') {
-    score += 30;
-  } else if (indicator.risk_level === 'extreme') {
     score += 45;
+  } else if (indicator.risk_level === 'extreme') {
+    score += 60;
   }
 
-  if (pctChange20d >= 15) {
+  if (pctChange20d != null && pctChange20d >= 15) {
     score += 18;
-  } else if (pctChange20d >= 12) {
+  } else if (pctChange20d != null && pctChange20d >= 12) {
     score += 14;
-  } else if (pctChange20d >= 8) {
+  } else if (pctChange20d != null && pctChange20d >= 8) {
     score += 8;
   }
 
-  if (pctFromMa500 >= 25) {
+  if (pctFromMa500 != null && pctFromMa500 >= 25) {
     score += 18;
-  } else if (pctFromMa500 >= 20) {
+  } else if (pctFromMa500 != null && pctFromMa500 >= 20) {
     score += 12;
-  } else if (pctFromMa500 >= 15) {
+  } else if (pctFromMa500 != null && pctFromMa500 >= 15) {
     score += 6;
   }
 
-  if (volumeRatio >= 1.5) {
+  if (volumeRatio != null && volumeRatio >= 1.5) {
     score += 12;
-  } else if (volumeRatio >= 1.25) {
+  } else if (volumeRatio != null && volumeRatio >= 1.25) {
     score += 6;
   }
 
-  if (drawdown1y > -5) {
+  if (drawdown1y != null && drawdown1y > -5) {
     score += 5;
   }
 
