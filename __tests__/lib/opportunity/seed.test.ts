@@ -19,10 +19,17 @@ describe('opportunity seed data', () => {
 
   it('keeps context entities out of the core pool', () => {
     const coreSymbols = new Set(seedCoreWatchlist.map(item => item.symbol));
+    const contextNames = seedContext
+      .map(item => item.related_name)
+      .sort();
 
-    expect(seedContext.some(item => item.related_name === 'Samsung Memory')).toBe(
-      true,
-    );
+    expect(contextNames).toEqual([
+      'ASML',
+      'CXMT',
+      'SK Hynix',
+      'Samsung Memory',
+      'TSMC',
+    ]);
     expect(coreSymbols.has('Samsung Memory')).toBe(false);
     expect(coreSymbols.has('CXMT')).toBe(false);
   });
@@ -35,6 +42,17 @@ describe('opportunity seed data', () => {
       for (const newsId of event.evidence_news_ids) {
         expect(newsIds.has(newsId)).toBe(true);
       }
+    }
+  });
+
+  it('maps each event symbol to a core or context entity', () => {
+    const coreSymbols = new Set(seedCoreWatchlist.map(item => item.symbol));
+    const contextNames = new Set(seedContext.map(item => item.related_name));
+
+    for (const event of seedCompanyEvents) {
+      expect(coreSymbols.has(event.symbol) || contextNames.has(event.symbol)).toBe(
+        true,
+      );
     }
   });
 
