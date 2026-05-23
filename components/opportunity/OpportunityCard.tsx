@@ -2,13 +2,13 @@
 
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
-import type { OpportunityCardData } from '@/lib/opportunity/types';
+import type { OpportunityCardData, OpportunityDecisionLevel } from '@/lib/opportunity/types';
 
 interface OpportunityCardProps {
   card: OpportunityCardData;
 }
 
-const decisionTone: Record<string, string> = {
+const decisionTone: Record<OpportunityDecisionLevel, string> = {
   small_probe: 'border-green-400/20 bg-green-400/10 text-green-400',
   pullback_candidate: 'border-amber-400/20 bg-amber-400/10 text-amber-400',
   strong_watch: 'border-sky-400/20 bg-sky-400/10 text-sky-400',
@@ -41,7 +41,7 @@ export function OpportunityCard({ card }: OpportunityCardProps) {
               {card.company_name}
             </span>
             <span
-              className={`rounded-full border px-2 py-0.5 text-xs font-semibold ${decisionTone[card.decision_level]}`}
+              className={`rounded-full border px-2 py-0.5 text-xs font-semibold ${decisionTone[card.decision_level] ?? 'border-gray-400/20 bg-gray-400/10 text-gray-400'}`}
             >
               {card.decision_label}
             </span>
@@ -73,8 +73,8 @@ export function OpportunityCard({ card }: OpportunityCardProps) {
             观察条件
           </p>
           <ul className="space-y-1 text-sm text-[var(--text)]">
-            {card.watch_conditions.map(condition => (
-              <li key={condition}>{condition}</li>
+            {card.watch_conditions.map((condition, i) => (
+              <li key={i}>{condition}</li>
             ))}
           </ul>
         </div>
@@ -83,8 +83,8 @@ export function OpportunityCard({ card }: OpportunityCardProps) {
             风险因素
           </p>
           <ul className="space-y-1 text-sm text-[var(--text)]">
-            {card.risk_factors.map(factor => (
-              <li key={factor}>{factor}</li>
+            {card.risk_factors.map((factor, i) => (
+              <li key={i}>{factor}</li>
             ))}
           </ul>
         </div>
@@ -94,6 +94,7 @@ export function OpportunityCard({ card }: OpportunityCardProps) {
         <div className="mt-4 border-t border-[var(--border)] pt-3">
           <button
             type="button"
+            aria-expanded={expanded}
             onClick={() => setExpanded(value => !value)}
             className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--muted)] hover:text-[var(--text)]"
           >

@@ -7,11 +7,12 @@ interface OpportunityGroupProps {
 }
 
 export function OpportunityGroup({ title, cards }: OpportunityGroupProps) {
+  const slug = title.replace(/[^\w]+/g, '-');
   return (
-    <section aria-labelledby={`${title}-title`} className="space-y-3">
+    <section aria-labelledby={`${slug}-title`} className="space-y-3">
       <div className="flex items-center justify-between">
         <h2
-          id={`${title}-title`}
+          id={`${slug}-title`}
           className="text-xs font-semibold uppercase tracking-widest text-[var(--muted)]"
         >
           {title}
