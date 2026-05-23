@@ -29,4 +29,9 @@ describe('IndexCard', () => {
     render(<IndexCard data={mockCard} />);
     expect(screen.getByText('+0.82%')).toBeInTheDocument();
   });
+
+  it('links to the chart detail page', () => {
+    render(<IndexCard data={mockCard} />);
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/chart/NDX');
+  });
 });
