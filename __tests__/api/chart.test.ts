@@ -30,6 +30,8 @@ function makeReq(
 }
 
 beforeEach(() => {
+  process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-key';
   (getChartData as jest.Mock).mockResolvedValue(mockData);
 });
 
@@ -83,5 +85,20 @@ describe('GET /api/chart/[symbol]', () => {
     const res = await GET(req, ctx);
 
     expect(res.status).toBe(404);
+  });
+
+  it('falls back to mock chart data when Supabase env is not configured', async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://your-project.supabase.co';
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'your-service-role-key';
+    jest.clearAllMocks();
+    const [req, ctx] = makeReq('NDX');
+
+    const res = await GET(req, ctx);
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.symbol).toBe('NDX');
+    expect(body.candles.length).toBeGreaterThan(0);
+    expect(getChartData).not.toHaveBeenCalled();
   });
 });

@@ -84,4 +84,24 @@ describe('/chart/[symbol] page', () => {
       }),
     );
   });
+
+  it('uses mock dashboard data when Supabase env is not configured', async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://your-project.supabase.co';
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'your-service-role-key';
+
+    const element = await ChartPage({
+      params: Promise.resolve({ symbol: 'ndx' }),
+    });
+
+    expect(createClient).not.toHaveBeenCalled();
+    expect(element).toEqual(
+      expect.objectContaining({
+        props: expect.objectContaining({
+          children: expect.objectContaining({
+            props: expect.objectContaining({ symbol: 'NDX' }),
+          }),
+        }),
+      }),
+    );
+  });
 });

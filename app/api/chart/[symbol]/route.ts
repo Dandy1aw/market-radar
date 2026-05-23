@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getChartData } from '@/lib/supabase/chart';
+import { hasSupabaseConfig } from '@/lib/supabase/env';
+import { getMockChartData } from '@/lib/mock-chart';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,8 +28,20 @@ export async function GET(
     );
   }
 
+  const upperSymbol = symbol.toUpperCase();
+  if (!hasSupabaseConfig()) {
+    const mockData = getMockChartData(upperSymbol, limit);
+    if (!mockData) {
+      return NextResponse.json(
+        { error: 'No data found for symbol' },
+        { status: 404 },
+      );
+    }
+    return NextResponse.json(mockData);
+  }
+
   try {
-    const data = await getChartData(symbol.toUpperCase(), limit);
+    const data = await getChartData(upperSymbol, limit);
     if (!data) {
       return NextResponse.json(
         { error: 'No data found for symbol' },

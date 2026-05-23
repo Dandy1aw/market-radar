@@ -1,6 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
 import { ChartPageClient } from '@/components/chart/ChartPageClient';
+import { getMockIndicatorCard } from '@/lib/mock-chart';
+import { hasSupabaseConfig } from '@/lib/supabase/env';
 import type { IndicatorCard, MarketNews, RiskLevel } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -23,6 +25,18 @@ export default async function ChartPage({
 }) {
   const { symbol } = await params;
   const upperSymbol = symbol.toUpperCase();
+
+  if (!hasSupabaseConfig()) {
+    const indicator = getMockIndicatorCard(upperSymbol);
+    if (!indicator) notFound();
+
+    return (
+      <div className="mx-auto max-w-5xl px-0 py-1 sm:px-2">
+        <ChartPageClient symbol={upperSymbol} indicator={indicator} news={[]} />
+      </div>
+    );
+  }
+
   const supabase = createAdminClient();
 
   const [indicatorRes, nameRes, newsRes] = await Promise.all([
