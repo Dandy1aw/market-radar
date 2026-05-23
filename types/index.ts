@@ -167,3 +167,26 @@ export interface DashboardData {
   dca: DcaSuggestion;
   daily_report: DashboardDailyReport;
 }
+
+export interface ChartCandle {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export interface ChartMa {
+  date: string;
+  ma20: number | null;
+  ma60: number | null;
+  ma250: number | null;
+}
+
+export interface ChartApiResponse {
+  symbol: string;
+  name: string;
+  candles: ChartCandle[];
+  ma: ChartMa[];
+}
