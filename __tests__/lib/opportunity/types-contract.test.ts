@@ -6,9 +6,11 @@ import type {
   PersistedOpportunityDecision,
 } from '@/lib/opportunity/types';
 
+// This file is a TypeScript contract test. Pair it with `npx tsc --noEmit`
+// because Jest transpilation does not type-check type-only contracts.
 describe('opportunity ingestion type contracts', () => {
   it('supports LLM extraction audit fields', () => {
-    const event: ExtractedOpportunityEvent = {
+    const event = {
       is_relevant: true,
       related_core_symbols: ['MU'],
       related_context_entities: ['Samsung Memory'],
@@ -27,13 +29,13 @@ describe('opportunity ingestion type contracts', () => {
       raw_llm_json: { is_relevant: true },
       llm_input_summary: 'Samsung HBM certification slipped',
       llm_model: 'deepseek-chat',
-    };
+    } satisfies ExtractedOpportunityEvent;
 
     expect(event.llm_model).toBe('deepseek-chat');
   });
 
   it('supports candidate auto-confirm decisions', () => {
-    const decision: CandidateValidationDecision = {
+    const decision = {
       decision: 'add_context',
       confidence: 0.86,
       name: 'Samsung Electronics',
@@ -45,13 +47,13 @@ describe('opportunity ingestion type contracts', () => {
       reason: 'Samsung is a recurring HBM competitor signal for MU.',
       evidence_news_ids: [2],
       risk_notes: ['Foreign ticker may not have market data.'],
-    };
+    } satisfies CandidateValidationDecision;
 
     expect(decision.decision).toBe('add_context');
   });
 
   it('supports discovered candidate rows', () => {
-    const candidate: DiscoveredCandidate = {
+    const candidate = {
       id: 1,
       name: 'Samsung Electronics',
       symbol: '005930.KS',
@@ -70,14 +72,14 @@ describe('opportunity ingestion type contracts', () => {
       evidence_news_ids: [2],
       created_at: '2026-05-24T01:00:00.000Z',
       updated_at: '2026-05-24T01:00:00.000Z',
-    };
+    } satisfies DiscoveredCandidate;
 
     expect(candidate.name).toBe('Samsung Electronics');
     expect(candidate.status).toBe('pending_ai_review');
   });
 
   it('supports persisted raw news and decision rows', () => {
-    const news: OpportunityPipelineRawNews = {
+    const news = {
       id: 1,
       source: 'finnhub',
       source_type: 'company_news',
@@ -91,8 +93,8 @@ describe('opportunity ingestion type contracts', () => {
       lang: 'en',
       raw_json: {},
       created_at: '2026-05-24T01:00:00.000Z',
-    };
-    const decision: PersistedOpportunityDecision = {
+    } satisfies OpportunityPipelineRawNews;
+    const decision = {
       id: 1,
       symbol: 'MU',
       market: 'US',
@@ -110,7 +112,7 @@ describe('opportunity ingestion type contracts', () => {
       risk_factors: ['Price may be extended.'],
       evidence_event_ids: [1],
       created_at: '2026-05-24T01:00:00.000Z',
-    };
+    } satisfies PersistedOpportunityDecision;
 
     expect(news.hash).toBe('hash');
     expect(decision.symbol).toBe('MU');

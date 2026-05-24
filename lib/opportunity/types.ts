@@ -10,6 +10,12 @@ export type OpportunityDecisionLevel =
 
 export type OpportunityDirection = 'positive' | 'neutral' | 'negative' | 'mixed';
 
+export type OpportunityIngestionAssetType =
+  | AssetType
+  | 'fund'
+  | 'company'
+  | 'private_company';
+
 export interface OpportunityCoreTarget {
   id: number;
   symbol: string;
@@ -153,9 +159,12 @@ export type CandidateValidationAction =
   | 'keep_candidate'
   | 'reject';
 
-export interface OpportunityPipelineRawNews extends OpportunityRawNews {
+export interface OpportunityPipelineRawNews
+  extends Omit<OpportunityRawNews, 'summary' | 'published_at'> {
   source_type: string | null;
+  summary: string | null;
   content: string | null;
+  published_at: string | null;
   fetched_at: string;
   lang: string | null;
 }
@@ -232,7 +241,7 @@ export interface PersistedOpportunityDecision {
   symbol: string;
   market: Market;
   company_name: string;
-  asset_type: AssetType;
+  asset_type: OpportunityIngestionAssetType;
   theme: string;
   decision_level: OpportunityDecisionLevel;
   total_score: number;
