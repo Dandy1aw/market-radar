@@ -185,4 +185,96 @@ describe('opportunity news pipeline', () => {
       }),
     ]));
   });
+
+  it('calls synthesizeDecision per symbol with events and passes results to decisions', async () => {
+    const fetchNews = jest.fn().mockResolvedValue([
+      {
+        source: 'finnhub',
+        source_type: 'company_news',
+        title: 'Samsung HBM certification timeline slips again',
+        summary: 'The delay could keep high-end memory supply tight.',
+        content: null,
+        url: null,
+        published_at: '2026-05-24T01:00:00.000Z',
+        lang: 'en',
+        raw_json: {},
+      },
+    ]);
+    const extractEvent = jest.fn().mockResolvedValue({
+      is_relevant: true,
+      related_core_symbols: ['MU'],
+      related_context_entities: ['Samsung Memory'],
+      theme: 'HBM / memory cycle',
+      event_type: 'competition',
+      event_direction: 'positive',
+      importance_score: 78,
+      summary: '三星延迟支撑MU竞争优势。',
+      key_facts: [],
+      positive_factors: [],
+      negative_factors: [],
+      supply_chain_mentions: [],
+      new_company_mentions: [],
+      uncertainty: [],
+      evidence: [],
+      raw_llm_json: {},
+      llm_input_summary: 'Samsung HBM certification timeline slips again',
+      llm_model: 'deepseek-chat',
+    });
+    const persist = {
+      upsertRawNews: jest.fn(async (news: OpportunityPipelineRawNews[]) =>
+        news.map((item: OpportunityPipelineRawNews, index: number) => ({
+          ...item,
+          id: index + 1,
+          created_at: 'now',
+        })),
+      ),
+      insertCompanyEvents: jest.fn(async () => [
+        {
+          id: 1,
+          symbol: 'Samsung Memory',
+          company_name: 'Samsung Memory',
+          theme: 'HBM / memory cycle',
+          event_type: 'competition' as const,
+          event_direction: 'positive' as const,
+          importance_score: 78,
+          event_summary: '三星延迟支撑MU竞争优势。',
+          evidence_news_ids: [1],
+          published_at: '2026-05-24T01:00:00.000Z',
+          raw_payload: {},
+          created_at: '2026-05-24T01:00:00.000Z',
+        },
+      ]),
+      replaceLatestOpportunityDecisions: jest.fn(),
+      upsertDiscoveredCandidate: jest.fn(),
+      upsertContextFromCandidate: jest.fn(),
+      upsertCoreFromCandidate: jest.fn(),
+    };
+    const synthesizeDecision = jest.fn().mockResolvedValue({
+      watch_conditions: ['关注三星认证进展'],
+      risk_factors: ['供应链存在不确定性'],
+    });
+
+    const summary = await runOpportunityNewsPipeline({
+      coreTargets: seedCoreWatchlist,
+      contextEntities: seedContext,
+      indicators: seedIndicators,
+      fetchNews,
+      extractEvent,
+      validateCandidate: jest.fn(),
+      synthesizeDecision,
+      persist,
+      limits: { maxNewsPerRun: 50, maxLlmCallsPerRun: 20 },
+    });
+
+    expect(synthesizeDecision).toHaveBeenCalledTimes(1);
+    expect(synthesizeDecision).toHaveBeenCalledWith(
+      expect.objectContaining({ target: expect.objectContaining({ symbol: 'MU' }) }),
+    );
+    expect(summary.decisionsSynthesized).toBe(1);
+
+    const decisionsCall = persist.replaceLatestOpportunityDecisions.mock.calls[0][0];
+    const muCard = decisionsCall.find((c: { symbol: string }) => c.symbol === 'MU');
+    expect(muCard?.watch_conditions).toEqual(['关注三星认证进展']);
+    expect(muCard?.risk_factors).toEqual(['供应链存在不确定性']);
+  });
 });

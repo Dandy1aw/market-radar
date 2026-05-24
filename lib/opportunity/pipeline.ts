@@ -1,5 +1,6 @@
 import { applyCandidateHardRules } from './candidate-validation';
-import { buildOpportunityCards } from './decision';
+import { buildOpportunityCards, collectEventsForTarget } from './decision';
+import type { SynthesizeDecisionInput, SynthesizedDecision } from './decision-synthesis';
 import type { ExtractOpportunityEventInput } from './event-extraction';
 import { filter_news_by_watchlist } from './news-filter';
 import { dedupeNews, type NewsLike, type NewsWithHash } from './news-dedupe';
@@ -56,6 +57,7 @@ export interface RunOpportunityNewsPipelineInput {
   validateCandidate: (
     input: CandidateValidationInput,
   ) => Promise<CandidateValidationOutput | null>;
+  synthesizeDecision?: (input: SynthesizeDecisionInput) => Promise<SynthesizedDecision | null>;
   persist: PipelinePersistence;
   limits: PipelineLimits;
 }
@@ -68,6 +70,7 @@ export interface PipelineSummary {
   eventsInserted: number;
   candidatesProcessed: number;
   decisionsGenerated: number;
+  decisionsSynthesized: number;
 }
 
 function toPipelineRawNews(news: NewsWithHash): OpportunityPipelineRawNews {
@@ -168,6 +171,7 @@ export async function runOpportunityNewsPipeline({
   fetchNews,
   extractEvent,
   validateCandidate,
+  synthesizeDecision,
   persist,
   limits,
 }: RunOpportunityNewsPipelineInput): Promise<PipelineSummary> {
@@ -232,12 +236,41 @@ export async function runOpportunityNewsPipeline({
   );
   const opportunityEvents = await persist.insertCompanyEvents(eventInserts);
 
+  const synthesizedBySymbol = new Map<string, SynthesizedDecision>();
+  let decisionsSynthesized = 0;
+
+  if (synthesizeDecision) {
+    const indicatorBySymbol = new Map(indicators.map(i => [i.symbol, i]));
+    const activeTargets = coreTargets.filter(t => t.is_active);
+    const activeTargetSymbols = new Set(activeTargets.map(t => t.symbol));
+
+    for (const target of activeTargets) {
+      const evidenceEvents = collectEventsForTarget(
+        target,
+        contextEntities,
+        activeTargetSymbols,
+        opportunityEvents,
+      );
+      if (evidenceEvents.length === 0) continue;
+
+      const indicator = indicatorBySymbol.get(target.symbol);
+      if (!indicator) continue;
+
+      const result = await synthesizeDecision({ target, events: evidenceEvents, indicator });
+      if (result) {
+        synthesizedBySymbol.set(target.symbol, result);
+        decisionsSynthesized++;
+      }
+    }
+  }
+
   const cards = buildOpportunityCards({
     coreTargets,
     context: contextEntities,
     events: opportunityEvents,
     indicators,
     rawNews: persistedNews.map(toOpportunityRawNews),
+    synthesizedBySymbol,
   });
   await persist.replaceLatestOpportunityDecisions(cards);
 
@@ -249,5 +282,6 @@ export async function runOpportunityNewsPipeline({
     eventsInserted: eventInserts.length,
     candidatesProcessed,
     decisionsGenerated: cards.length,
+    decisionsSynthesized,
   };
 }
