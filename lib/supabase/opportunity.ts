@@ -10,6 +10,7 @@ import {
   groupOpportunityCards,
 } from '@/lib/opportunity/decision';
 import type { OpportunityApiResponse } from '@/lib/opportunity/types';
+import { getLatestOpportunityDecisionData } from './opportunity-ingestion';
 
 
 export function getSeedOpportunityData(): OpportunityApiResponse {
@@ -24,8 +25,7 @@ export function getSeedOpportunityData(): OpportunityApiResponse {
   return groupOpportunityCards(cards);
 }
 
-// MVP always uses seed data. Supabase mapping will be added once the
-// opportunity_decision table and ingestion pipeline exist.
 export async function getOpportunityData(): Promise<OpportunityApiResponse> {
-  return getSeedOpportunityData();
+  const persisted = await getLatestOpportunityDecisionData();
+  return persisted ?? getSeedOpportunityData();
 }

@@ -1,5 +1,3 @@
-import { GET } from '@/app/api/opportunity/route';
-
 describe('GET /api/opportunity', () => {
   const originalEnv = process.env;
 
@@ -14,9 +12,11 @@ describe('GET /api/opportunity', () => {
 
   afterEach(() => {
     process.env = originalEnv;
+    jest.dontMock('@/lib/supabase/opportunity-ingestion');
   });
 
   it('returns grouped seed opportunity data when Supabase is not configured', async () => {
+    const { GET } = await import('@/app/api/opportunity/route');
     const response = await GET();
     const body = await response.json();
 
@@ -35,6 +35,7 @@ describe('GET /api/opportunity', () => {
   });
 
   it('does not expose context entities as recommendation cards', async () => {
+    const { GET } = await import('@/app/api/opportunity/route');
     const response = await GET();
     const body = await response.json();
     const allSymbols = [
@@ -47,5 +48,54 @@ describe('GET /api/opportunity', () => {
     expect(allSymbols).toContain('MU');
     expect(allSymbols).not.toContain('Samsung Memory');
     expect(allSymbols).not.toContain('CXMT');
+  });
+
+  it('returns persisted opportunity data when available', async () => {
+    jest.doMock('@/lib/supabase/opportunity-ingestion', () => ({
+      getLatestOpportunityDecisionData: jest.fn().mockResolvedValue({
+        updated_at: '2026-05-24T01:00:00.000Z',
+        summary: {
+          total: 1,
+          strong_watch: 1,
+          pullback_candidate: 0,
+          risk_high: 0,
+          other: 0,
+        },
+        groups: {
+          strong_watch: [
+            {
+              symbol: 'MU',
+              company_name: 'Micron Technology',
+              asset_type: 'stock',
+              market: 'US',
+              theme: 'HBM / memory cycle',
+              decision_level: 'strong_watch',
+              decision_label: '强关注',
+              total_score: 75,
+              news_score: 85,
+              price_position_score: 55,
+              context_signal_score: 78,
+              risk_score: 42,
+              summary: 'Persisted decision.',
+              watch_conditions: [],
+              risk_factors: [],
+              evidence_events: [],
+              evidence_news: [],
+              updated_at: '2026-05-24T01:00:00.000Z',
+            },
+          ],
+          pullback_candidate: [],
+          risk_high: [],
+          other: [],
+        },
+      }),
+    }));
+
+    const { GET } = await import('@/app/api/opportunity/route');
+    const response = await GET();
+    const body = await response.json();
+
+    expect(body.summary.total).toBe(1);
+    expect(body.groups.strong_watch[0].summary).toBe('Persisted decision.');
   });
 });
