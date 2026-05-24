@@ -91,35 +91,38 @@ export function OpportunityCard({ card }: OpportunityCardProps) {
         </div>
       </div>
 
-      {card.evidence_news.length > 0 && (
-        <div className="mt-4 border-t border-[var(--border)] pt-3">
-          <button
-            type="button"
-            aria-expanded={expanded}
-            onClick={() => setExpanded(value => !value)}
-            className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--muted)] hover:text-[var(--text)]"
-          >
-            <ChevronDown
-              size={14}
-              className={expanded ? 'rotate-180 transition-transform' : 'transition-transform'}
-              aria-hidden="true"
-            />
-            证据 {card.evidence_news.length}
-          </button>
-          {expanded && (
-            <ul className="mt-3 space-y-2">
-              {card.evidence_news.map(news => (
-                <li key={news.id}>
-                  <p className="text-sm font-medium text-[var(--text)]">
-                    {news.title}
-                  </p>
-                  <p className="text-xs text-[var(--muted)]">{news.summary}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
+      {(() => {
+        const items = card.evidence_events.length > 0
+          ? card.evidence_events.map(e => e.event_summary).filter(Boolean)
+          : card.evidence_news.map(n => n.title);
+        if (items.length === 0) return null;
+        return (
+          <div className="mt-4 border-t border-[var(--border)] pt-3">
+            <button
+              type="button"
+              aria-expanded={expanded}
+              onClick={() => setExpanded(value => !value)}
+              className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--muted)] hover:text-[var(--text)]"
+            >
+              <ChevronDown
+                size={14}
+                className={expanded ? 'rotate-180 transition-transform' : 'transition-transform'}
+                aria-hidden="true"
+              />
+              证据 {items.length}
+            </button>
+            {expanded && (
+              <ul className="mt-3 space-y-1">
+                {items.map((item, i) => (
+                  <li key={i} className="text-sm text-[var(--muted)]">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        );
+      })()}
     </Card>
   );
 }
