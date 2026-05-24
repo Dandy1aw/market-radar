@@ -11,6 +11,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@next/env": "^16.2.6",
     "@supabase/supabase-js": "^2.105.4",
     "echarts": "^6.0.0",
     "echarts-for-react": "^3.0.6",

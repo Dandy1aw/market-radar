@@ -1,4 +1,6 @@
 // Run via: npx tsx scripts/fetch-opportunity-news.ts
+import { loadEnvConfig } from '@next/env';
+
 import { fetchCompanyNews } from '../lib/data-sources/finnhub';
 import { chatCompletion, getLlmModelName } from '../lib/llm/client';
 import { buildCandidateValidationPrompt } from '../lib/opportunity/candidate-validation';
@@ -22,6 +24,8 @@ import type {
   OpportunityCoreTarget,
 } from '../lib/opportunity/types';
 import type { NewsLike } from '../lib/opportunity/news-dedupe';
+
+loadEnvConfig(process.cwd());
 
 const REQUIRED_ENV = [
   'NEXT_PUBLIC_SUPABASE_URL',
