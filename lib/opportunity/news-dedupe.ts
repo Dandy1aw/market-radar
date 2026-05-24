@@ -29,9 +29,9 @@ function canonicalUrl(url: string | null): string {
 
   try {
     const parsed = new URL(url);
-    return `${parsed.hostname}${parsed.pathname}`.toLowerCase();
+    return `${parsed.host}${parsed.pathname}`.toLowerCase();
   } catch {
-    return url.toLowerCase().split('?')[0] ?? '';
+    return url.toLowerCase().split(/[?#]/)[0] ?? '';
   }
 }
 

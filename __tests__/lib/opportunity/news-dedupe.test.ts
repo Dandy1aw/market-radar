@@ -33,6 +33,52 @@ describe('news dedupe helpers', () => {
     );
   });
 
+  it('creates stable hashes for different times on the same published day', () => {
+    expect(createNewsHash(baseNews)).toBe(
+      createNewsHash({
+        ...baseNews,
+        published_at: '2026-05-24T23:59:00.000Z',
+      }),
+    );
+  });
+
+  it('creates different hashes for different published days', () => {
+    expect(createNewsHash(baseNews)).not.toBe(
+      createNewsHash({
+        ...baseNews,
+        published_at: '2026-05-25T01:20:00.000Z',
+      }),
+    );
+  });
+
+  it('includes valid URL ports in the hash', () => {
+    expect(
+      createNewsHash({
+        ...baseNews,
+        url: 'https://example.com:8080/article',
+      }),
+    ).not.toBe(
+      createNewsHash({
+        ...baseNews,
+        url: 'https://example.com:9090/article',
+      }),
+    );
+  });
+
+  it('strips fragments from malformed URL fallback canonicalization', () => {
+    expect(
+      createNewsHash({
+        ...baseNews,
+        url: 'relative/article#fragment',
+      }),
+    ).toBe(
+      createNewsHash({
+        ...baseNews,
+        url: 'relative/article',
+      }),
+    );
+  });
+
   it('removes duplicate news by hash', () => {
     const deduped = dedupeNews([
       baseNews,
@@ -46,5 +92,19 @@ describe('news dedupe helpers', () => {
 
     expect(deduped).toHaveLength(2);
     expect(deduped[0].hash).toBeDefined();
+  });
+
+  it('preserves the first-seen item when duplicates collapse', () => {
+    const deduped = dedupeNews([
+      baseNews,
+      {
+        ...baseNews,
+        title: 'micron highlights hbm demand',
+        summary: 'Second duplicate should be dropped.',
+      },
+    ]);
+
+    expect(deduped).toHaveLength(1);
+    expect(deduped[0].summary).toBe(baseNews.summary);
   });
 });
