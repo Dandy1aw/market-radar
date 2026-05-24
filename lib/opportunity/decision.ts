@@ -1,4 +1,5 @@
 import { calcOpportunityScores } from './scoring';
+import type { SynthesizedDecision } from './decision-synthesis';
 import type {
   OpportunityApiResponse,
   OpportunityCardData,
@@ -29,6 +30,7 @@ interface BuildOpportunityCardsInput {
   events: OpportunityCompanyEvent[];
   indicators: OpportunityIndicatorSnapshot[];
   rawNews: OpportunityRawNews[];
+  synthesizedBySymbol?: Map<string, SynthesizedDecision>;
 }
 
 export function deriveDecisionLevel(
@@ -61,12 +63,40 @@ export function deriveDecisionLevel(
   return 'post_earnings_wait';
 }
 
+export function collectEventsForTarget(
+  target: OpportunityCoreTarget,
+  context: OpportunityContextEntity[],
+  activeTargetSymbols: Set<string>,
+  events: OpportunityCompanyEvent[],
+): OpportunityCompanyEvent[] {
+  const activeContext = context.filter(
+    entity => entity.is_active && activeTargetSymbols.has(entity.core_symbol),
+  );
+  const directEvents = events.filter(event => event.symbol === target.symbol);
+  const contextEvents = events.filter(event =>
+    activeContext.some(
+      entity =>
+        entity.core_symbol === target.symbol &&
+        (event.symbol === entity.related_name ||
+          event.symbol === entity.related_symbol ||
+          event.company_name === entity.related_name),
+    ),
+  );
+  const seen = new Set<number>();
+  return [...directEvents, ...contextEvents].filter(event => {
+    if (seen.has(event.id)) return false;
+    seen.add(event.id);
+    return true;
+  });
+}
+
 export function buildOpportunityCards({
   coreTargets,
   context,
   events,
   indicators,
   rawNews,
+  synthesizedBySymbol,
 }: BuildOpportunityCardsInput): OpportunityCardData[] {
   const indicatorBySymbol = new Map(
     indicators.map(indicator => [indicator.symbol, indicator]),
@@ -85,6 +115,7 @@ export function buildOpportunityCards({
       return [];
     }
 
+    // Keep original split for scoring (calcOpportunityScores weights them differently)
     const directEvents = events.filter(event => event.symbol === target.symbol);
     const contextEvents = events.filter(event =>
       activeContext.some(
@@ -95,7 +126,13 @@ export function buildOpportunityCards({
             event.company_name === entity.related_name),
       ),
     );
-    const evidenceEvents = dedupeEventsById([...directEvents, ...contextEvents]);
+    // Deduped union for display and synthesis
+    const evidenceEvents = collectEventsForTarget(
+      target,
+      context,
+      activeTargetSymbols,
+      events,
+    );
     const evidenceNews = collectEvidenceNews(evidenceEvents, newsById);
     const scores = calcOpportunityScores({
       indicator,
@@ -103,6 +140,7 @@ export function buildOpportunityCards({
       contextEvents,
     });
     const decision_level = deriveDecisionLevel(scores);
+    const synthesized = synthesizedBySymbol?.get(target.symbol);
 
     return [
       {
@@ -115,8 +153,8 @@ export function buildOpportunityCards({
         decision_label: opportunityDecisionLabels[decision_level],
         ...scores,
         summary: buildSummary(target, decision_level, scores),
-        watch_conditions: buildWatchConditions(indicator, evidenceEvents),
-        risk_factors: buildRiskFactors(indicator, evidenceEvents, scores),
+        watch_conditions: synthesized?.watch_conditions ?? buildWatchConditions(indicator, evidenceEvents),
+        risk_factors: synthesized?.risk_factors ?? buildRiskFactors(indicator, evidenceEvents, scores),
         evidence_events: evidenceEvents,
         evidence_news: evidenceNews,
         updated_at: getLatestTimestamp(target, evidenceEvents, evidenceNews),
@@ -162,21 +200,6 @@ export function groupOpportunityCards(
     },
     groups,
   };
-}
-
-function dedupeEventsById(
-  events: OpportunityCompanyEvent[],
-): OpportunityCompanyEvent[] {
-  const seen = new Set<number>();
-
-  return events.filter(event => {
-    if (seen.has(event.id)) {
-      return false;
-    }
-
-    seen.add(event.id);
-    return true;
-  });
 }
 
 function collectEvidenceNews(

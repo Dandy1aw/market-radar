@@ -177,6 +177,44 @@ describe('opportunity decisions', () => {
     ).toBe(true);
   });
 
+  it('uses synthesized watch_conditions and risk_factors when provided', () => {
+    const synthesizedBySymbol = new Map([
+      [
+        'MU',
+        {
+          watch_conditions: ['关注三星认证进展对HBM供需格局的影响'],
+          risk_factors: ['20日已涨15%，短期存在获利回吐风险'],
+        },
+      ],
+    ]);
+
+    const cards = buildOpportunityCards({
+      coreTargets: seedCoreWatchlist,
+      context: seedContext,
+      events: seedCompanyEvents,
+      indicators: seedIndicators,
+      rawNews: seedRawNews,
+      synthesizedBySymbol,
+    });
+    const muCard = cards.find(card => card.symbol === 'MU');
+
+    expect(muCard?.watch_conditions).toEqual(['关注三星认证进展对HBM供需格局的影响']);
+    expect(muCard?.risk_factors).toEqual(['20日已涨15%，短期存在获利回吐风险']);
+  });
+
+  it('falls back to template watch_conditions when synthesizedBySymbol is absent', () => {
+    const cards = buildOpportunityCards({
+      coreTargets: seedCoreWatchlist,
+      context: seedContext,
+      events: seedCompanyEvents,
+      indicators: seedIndicators,
+      rawNews: seedRawNews,
+    });
+    const muCard = cards.find(card => card.symbol === 'MU');
+
+    expect(muCard?.watch_conditions.length).toBeGreaterThan(0);
+  });
+
   it('does not place risk-high pullback-like cards in pullback candidates', () => {
     const riskHighPullbackLikeCard: OpportunityCardData = {
       symbol: 'RISK',
