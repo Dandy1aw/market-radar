@@ -37,7 +37,7 @@ const EVENT_JSON_SCHEMA = `{
   "event_type": "competition",
   "event_direction": "positive",
   "importance_score": 78,
-  "summary": "Samsung HBM certification delay may keep near-term HBM supply tight.",
+  "summary": "三星HBM认证延迟，供给偏紧支撑MU",
   "key_facts": ["Samsung HBM certification timeline reportedly slipped again."],
   "positive_factors": ["Tighter HBM supply may support MU's competitive setup."],
   "negative_factors": [],
@@ -46,8 +46,8 @@ const EVENT_JSON_SCHEMA = `{
   "uncertainty": [],
   "evidence": [
     {
-      "text": "Samsung HBM certification timeline reportedly slips again",
-      "reason": "This directly supports the extracted event."
+      "text": "三星HBM认证进度再度推迟",
+      "reason": "供给紧张预期直接支撑MU的竞争优势"
     }
   ]
 }`;
@@ -82,6 +82,9 @@ export function buildEventExtractionPrompt({
   return `You are a technology investing research assistant extracting structured event facts from news.
 
 Return strict JSON only. Do not wrap the response in markdown. Do not output buy or sell instructions. Do not invent facts. The rule engine owns decision_level; you only extract evidence-backed events.
+
+Write the "summary" field in Simplified Chinese (简体中文), under 30 characters.
+Write evidence[].text and evidence[].reason in Simplified Chinese (简体中文). Keep each text under 25 characters and each reason under 40 characters.
 
 Allowed event_type values: demand, competition, product, supply_chain, earnings_risk, macro, price_action.
 Allowed event_direction values: positive, neutral, negative, mixed.
