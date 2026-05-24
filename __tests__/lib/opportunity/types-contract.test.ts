@@ -50,6 +50,32 @@ describe('opportunity ingestion type contracts', () => {
     expect(decision.decision).toBe('add_context');
   });
 
+  it('supports discovered candidate rows', () => {
+    const candidate: DiscoveredCandidate = {
+      id: 1,
+      name: 'Samsung Electronics',
+      symbol: '005930.KS',
+      market: 'KR',
+      theme: 'HBM / memory cycle',
+      discovered_from: 'llm_extraction',
+      related_to_symbol: 'MU',
+      relation_type: 'competitor',
+      reason: 'Samsung is a recurring HBM competitor signal for MU.',
+      mention_count: 2,
+      importance_score: 82,
+      confidence: 0.86,
+      status: 'pending_ai_review',
+      ai_decision: 'add_context',
+      raw_llm_json: { decision: 'add_context' },
+      evidence_news_ids: [2],
+      created_at: '2026-05-24T01:00:00.000Z',
+      updated_at: '2026-05-24T01:00:00.000Z',
+    };
+
+    expect(candidate.name).toBe('Samsung Electronics');
+    expect(candidate.status).toBe('pending_ai_review');
+  });
+
   it('supports persisted raw news and decision rows', () => {
     const news: OpportunityPipelineRawNews = {
       id: 1,
