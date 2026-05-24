@@ -40,13 +40,13 @@ function formatEventsForPrompt(events: OpportunityCompanyEvent[]): string {
     .map((e, i) => {
       const p = e.raw_payload;
       const positive = Array.isArray(p?.positive_factors)
-        ? (p.positive_factors as string[]).join('; ')
+        ? (p.positive_factors as unknown[]).map(String).join('; ')
         : '';
       const negative = Array.isArray(p?.negative_factors)
-        ? (p.negative_factors as string[]).join('; ')
+        ? (p.negative_factors as unknown[]).map(String).join('; ')
         : '';
       const uncertainty = Array.isArray(p?.uncertainty)
-        ? (p.uncertainty as string[]).join('; ')
+        ? (p.uncertainty as unknown[]).map(String).join('; ')
         : '';
       return [
         `Event ${i + 1}: [${e.event_type}/${e.event_direction}] importance=${e.importance_score}`,
