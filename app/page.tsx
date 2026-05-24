@@ -1,5 +1,7 @@
 import { MarketStatusBanner } from '@/components/dashboard/MarketStatusBanner';
+import { TodayStrategyCard } from '@/components/dashboard/TodayStrategyCard';
 import { IndexCard } from '@/components/dashboard/IndexCard';
+import { DashboardIndexCharts } from '@/components/dashboard/DashboardIndexCharts';
 import { EtfGrid } from '@/components/dashboard/EtfGrid';
 import { RecommendationSection } from '@/components/dashboard/RecommendationSection';
 import { DcaSuggestion } from '@/components/dashboard/DcaSuggestion';
@@ -20,12 +22,16 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <MarketStatusBanner status={data.market_status} tradeDate={data.trade_date} />
 
+      <TodayStrategyCard data={data} />
+
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--muted)] mb-3">指数</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {data.index_cards.map(card => <IndexCard key={card.symbol} data={card} />)}
         </div>
       </section>
+
+      <DashboardIndexCharts />
 
       <EtfGrid etfs={data.etf_cards} />
 
