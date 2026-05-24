@@ -8,6 +8,7 @@ import { extractOpportunityEvent } from '../lib/opportunity/event-extraction';
 import { parseJsonWithRepair } from '../lib/opportunity/llm-json';
 import { runOpportunityNewsPipeline } from '../lib/opportunity/pipeline';
 import { seedIndicators } from '../lib/opportunity/seed';
+import { synthesizeOpportunityDecision } from '../lib/opportunity/decision-synthesis';
 import {
   getContextEntities,
   getCoreTargets,
@@ -161,6 +162,11 @@ async function main(): Promise<void> {
         evidenceNewsIds,
         sourceSummary,
       }),
+    synthesizeDecision: ({ target, events, indicator }) =>
+      synthesizeOpportunityDecision(
+        { target, events, indicator },
+        (messages) => chatCompletion(messages, { temperature: 0.1, maxTokens: 600 }),
+      ),
     persist: {
       upsertRawNews,
       insertCompanyEvents,
@@ -171,7 +177,7 @@ async function main(): Promise<void> {
     },
     limits: {
       maxNewsPerRun: numberEnv('OPPORTUNITY_MAX_NEWS_PER_RUN', 50),
-      maxLlmCallsPerRun: numberEnv('OPPORTUNITY_MAX_LLM_CALLS_PER_RUN', 20),
+      maxLlmCallsPerRun: numberEnv('OPPORTUNITY_MAX_LLM_CALLS_PER_RUN', 100),
     },
   });
 
