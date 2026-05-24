@@ -19,7 +19,7 @@ interface BuildEventExtractionPromptInput {
   contextEntities: OpportunityContextEntity[];
 }
 
-interface ExtractOpportunityEventInput extends BuildEventExtractionPromptInput {
+export interface ExtractOpportunityEventInput extends BuildEventExtractionPromptInput {
   chat: ChatFn;
   model: string;
 }
