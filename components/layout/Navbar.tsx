@@ -10,8 +10,7 @@ export function Navbar() {
         <div className="flex items-center gap-6 text-sm text-[var(--muted)]">
           <Link href="/" className="hover:text-[var(--text)] transition-colors">Dashboard</Link>
           <Link href="/watchlist" className="hover:text-[var(--text)] transition-colors">自选股</Link>
-          <Link href="/opportunity" className="hover:text-[var(--text)] transition-colors">机会雷达</Link>
-          <span className="opacity-30 cursor-not-allowed" title="即将上线">复盘</span>
+<span className="opacity-30 cursor-not-allowed" title="即将上线">复盘</span>
           <span className="opacity-30 cursor-not-allowed" title="即将上线">A股板块</span>
           <span className="opacity-30 cursor-not-allowed" title="即将上线">设置</span>
         </div>

@@ -28,6 +28,19 @@ jest.mock('@/components/dashboard/DcaSuggestion', () => ({
 jest.mock('@/components/dashboard/DailyReportCard', () => ({
   DailyReportCard: () => <div data-testid="daily-report" />,
 }));
+jest.mock('@/components/opportunity/OpportunityGroup', () => ({
+  OpportunityGroup: () => <div data-testid="opportunity-group" />,
+}));
+jest.mock('@/components/opportunity/OpportunitySummaryBar', () => ({
+  OpportunitySummaryBar: () => <div data-testid="opportunity-summary-bar" />,
+}));
+jest.mock('@/lib/supabase/opportunity', () => ({
+  getOpportunityData: jest.fn().mockResolvedValue({
+    updated_at: '2026-05-23T08:00:00.000Z',
+    summary: { total: 0, strong_watch: 0, pullback_candidate: 0, risk_high: 0, other: 0 },
+    groups: { strong_watch: [], pullback_candidate: [], risk_high: [], other: [] },
+  }),
+}));
 
 beforeEach(() => {
   process.env.NEXT_PUBLIC_BASE_URL = 'http://localhost:3000';

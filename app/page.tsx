@@ -6,6 +6,9 @@ import { EtfGrid } from '@/components/dashboard/EtfGrid';
 import { RecommendationSection } from '@/components/dashboard/RecommendationSection';
 import { DcaSuggestion } from '@/components/dashboard/DcaSuggestion';
 import { DailyReportCard } from '@/components/dashboard/DailyReportCard';
+import { OpportunityGroup } from '@/components/opportunity/OpportunityGroup';
+import { OpportunitySummaryBar } from '@/components/opportunity/OpportunitySummaryBar';
+import { getOpportunityData } from '@/lib/supabase/opportunity';
 import type { DashboardData } from '@/types';
 
 async function getDashboard(): Promise<DashboardData> {
@@ -16,7 +19,7 @@ async function getDashboard(): Promise<DashboardData> {
 }
 
 export default async function DashboardPage() {
-  const data = await getDashboard();
+  const [data, opportunity] = await Promise.all([getDashboard(), getOpportunityData()]);
 
   return (
     <div className="space-y-6">
@@ -35,9 +38,12 @@ export default async function DashboardPage() {
 
       <EtfGrid etfs={data.etf_cards} />
 
-      <RecommendationSection title="强关注" emoji="🔥" variant="positive" items={data.strong_watch} />
-      <RecommendationSection title="回调关注" emoji="📉" variant="warning" items={data.pullback_watch} />
-      <RecommendationSection title="风险观察" emoji="⚠️" variant="negative" items={data.risk_watch} />
+      <OpportunitySummaryBar data={opportunity} />
+      <OpportunityGroup groupKey="pullback-candidate" title="回调买入候选" cards={opportunity.groups.pullback_candidate} />
+      <OpportunityGroup groupKey="strong-watch" title="继续强关注" cards={opportunity.groups.strong_watch} />
+      <OpportunityGroup groupKey="risk-high" title="风险过高" cards={opportunity.groups.risk_high} />
+      <OpportunityGroup groupKey="other" title="其他观察" cards={opportunity.groups.other} />
+
       <RecommendationSection title="A股板块" emoji="🇨🇳" variant="info" items={data.cn_sectors} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
