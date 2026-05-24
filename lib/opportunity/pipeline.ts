@@ -38,7 +38,7 @@ interface CandidateValidationOutput {
 
 interface PipelinePersistence {
   upsertRawNews(news: OpportunityPipelineRawNews[]): Promise<OpportunityPipelineRawNews[]>;
-  insertCompanyEvents(events: CompanyEventInsert[]): Promise<void>;
+  insertCompanyEvents(events: CompanyEventInsert[]): Promise<OpportunityCompanyEvent[]>;
   replaceLatestOpportunityDecisions(cards: OpportunityCardData[]): Promise<void>;
   upsertDiscoveredCandidate(candidate: DiscoveredCandidateInsert): Promise<void>;
   upsertContextFromCandidate(decision: CandidateValidationDecision): Promise<void>;
@@ -137,29 +137,6 @@ function toOpportunityRawNews(news: OpportunityPipelineRawNews): OpportunityRawN
   };
 }
 
-function toOpportunityEvent(
-  event: ExtractedOpportunityEvent,
-  index: number,
-  evidenceNewsIds: number[],
-): OpportunityCompanyEvent {
-  const symbol = eventSymbol(event);
-
-  return {
-    id: index + 1,
-    symbol,
-    company_name: symbol,
-    theme: event.theme,
-    event_type: event.event_type,
-    event_direction: event.event_direction,
-    importance_score: event.importance_score,
-    event_summary: event.summary,
-    evidence_news_ids: evidenceNewsIds,
-    published_at: new Date().toISOString(),
-    raw_payload: event.raw_llm_json,
-    created_at: new Date().toISOString(),
-  };
-}
-
 function toCandidateInsert(
   decision: CandidateValidationDecision,
   status: DiscoveredCandidateInsert['status'],
@@ -253,10 +230,7 @@ export async function runOpportunityNewsPipeline({
   const eventInserts = extractedEvents.map((event) =>
     toCompanyEventInsert(event, evidenceIdsByEvent.get(event) ?? []),
   );
-  const opportunityEvents = extractedEvents.map((event, index) =>
-    toOpportunityEvent(event, index, evidenceIdsByEvent.get(event) ?? []),
-  );
-  await persist.insertCompanyEvents(eventInserts);
+  const opportunityEvents = await persist.insertCompanyEvents(eventInserts);
 
   const cards = buildOpportunityCards({
     coreTargets,

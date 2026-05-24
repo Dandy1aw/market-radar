@@ -34,6 +34,11 @@ export interface CompanyEventInsert {
   extraction_error?: string | null;
 }
 
+interface CompanyEventRow extends CompanyEventInsert {
+  id: number;
+  created_at: string;
+}
+
 export interface DiscoveredCandidateInsert {
   name: string;
   symbol: string | null;
@@ -83,6 +88,37 @@ export function mapRawNewsForInsert(
     hash: news.hash,
     lang: news.lang,
     raw_json: news.raw_json,
+  };
+}
+
+function mapCompanyEventRow(row: CompanyEventRow): OpportunityCompanyEvent {
+  return {
+    id: row.id,
+    symbol: row.symbol,
+    company_name: row.company_name,
+    theme: row.theme,
+    event_type: row.event_type,
+    event_direction: row.event_direction,
+    importance_score: row.importance_score,
+    event_summary: row.event_summary,
+    evidence_news_ids: row.evidence_news_ids,
+    published_at: row.published_at,
+    raw_payload: row.raw_llm_json,
+    created_at: row.created_at,
+  };
+}
+
+function mapRawNewsRow(row: OpportunityPipelineRawNews): OpportunityRawNews {
+  return {
+    id: row.id,
+    source: row.source,
+    title: row.title,
+    summary: row.summary ?? '',
+    url: row.url,
+    published_at: row.published_at ?? row.fetched_at,
+    hash: row.hash,
+    raw_json: row.raw_json,
+    created_at: row.created_at,
   };
 }
 
@@ -165,11 +201,15 @@ export async function upsertRawNews(
 
 export async function insertCompanyEvents(
   events: CompanyEventInsert[],
-): Promise<void> {
-  if (events.length === 0) return;
+): Promise<OpportunityCompanyEvent[]> {
+  if (events.length === 0) return [];
 
-  const { error } = await adminClient().from('company_event').insert(events);
+  const { data, error } = await adminClient()
+    .from('company_event')
+    .insert(events)
+    .select('*');
   assertNoError(error);
+  return ((data ?? []) as CompanyEventRow[]).map(mapCompanyEventRow);
 }
 
 export async function upsertDiscoveredCandidate(
@@ -267,5 +307,29 @@ export async function getLatestOpportunityDecisionData(): Promise<OpportunityApi
 
   if (latestRows.size === 0) return null;
 
-  return mapDecisionRowsToOpportunityResponse([...latestRows.values()], [], []);
+  const rows = [...latestRows.values()];
+  const eventIds = [...new Set(rows.flatMap((row) => row.evidence_event_ids))];
+  let events: OpportunityCompanyEvent[] = [];
+  let rawNews: OpportunityRawNews[] = [];
+
+  if (eventIds.length > 0) {
+    const { data: eventRows, error: eventError } = await adminClient()
+      .from('company_event')
+      .select('*')
+      .in('id', eventIds);
+    assertNoError(eventError);
+    events = ((eventRows ?? []) as CompanyEventRow[]).map(mapCompanyEventRow);
+
+    const newsIds = [...new Set(events.flatMap((event) => event.evidence_news_ids))];
+    if (newsIds.length > 0) {
+      const { data: newsRows, error: newsError } = await adminClient()
+        .from('raw_news')
+        .select('*')
+        .in('id', newsIds);
+      assertNoError(newsError);
+      rawNews = ((newsRows ?? []) as OpportunityPipelineRawNews[]).map(mapRawNewsRow);
+    }
+  }
+
+  return mapDecisionRowsToOpportunityResponse(rows, events, rawNews);
 }

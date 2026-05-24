@@ -2,7 +2,7 @@ import {
   mapDecisionRowsToOpportunityResponse,
   mapRawNewsForInsert,
 } from '@/lib/supabase/opportunity-ingestion';
-import { seedRawNews } from '@/lib/opportunity/seed';
+import { seedCompanyEvents, seedRawNews } from '@/lib/opportunity/seed';
 import type { PersistedOpportunityDecision } from '@/lib/opportunity/types';
 
 describe('opportunity ingestion supabase mapping', () => {
@@ -42,9 +42,19 @@ describe('opportunity ingestion supabase mapping', () => {
       },
     ];
 
-    const response = mapDecisionRowsToOpportunityResponse(rows, [], []);
+    const response = mapDecisionRowsToOpportunityResponse(
+      rows,
+      [seedCompanyEvents[0]],
+      [seedRawNews[0]],
+    );
 
     expect(response.summary.total).toBe(1);
     expect(response.groups.strong_watch[0].symbol).toBe('MU');
+    expect(response.groups.strong_watch[0].evidence_events).toEqual([
+      seedCompanyEvents[0],
+    ]);
+    expect(response.groups.strong_watch[0].evidence_news).toEqual([
+      seedRawNews[0],
+    ]);
   });
 });

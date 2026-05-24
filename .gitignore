@@ -42,3 +42,6 @@ next-env.d.ts
 
 # local git worktrees
 .worktrees/
+
+# local code graph cache
+.codegraph/
