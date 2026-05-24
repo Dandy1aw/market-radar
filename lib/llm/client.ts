@@ -3,13 +3,17 @@ interface ChatMessage {
   content: string;
 }
 
+export function getLlmModelName(): string {
+  return process.env.LLM_MODEL ?? 'gpt-4o-mini';
+}
+
 export async function chatCompletion(
   messages: ChatMessage[],
   options: { temperature?: number; maxTokens?: number } = {},
 ): Promise<string> {
   const apiKey = process.env.LLM_API_KEY!;
   const baseUrl = process.env.LLM_BASE_URL ?? 'https://api.openai.com/v1';
-  const model = process.env.LLM_MODEL ?? 'gpt-4o-mini';
+  const model = getLlmModelName();
 
   const res = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
