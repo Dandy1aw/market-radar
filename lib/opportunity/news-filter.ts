@@ -20,6 +20,8 @@ const THEME_KEYWORDS: Record<string, string[]> = {
   'Nasdaq 100 beta': ['nasdaq', 'mega cap', 'growth stocks'],
 };
 
+const CONTEXT_ALIAS_TERMS = ['hbm', 'dram', 'memory', 'certification', 'supply'];
+
 export interface ContextMatch {
   core_symbol: string;
   related_symbol: string | null;
@@ -49,7 +51,9 @@ function hasPhrase(text: string, phrase: string): boolean {
   const normalized = phrase.trim().toLowerCase();
   if (!normalized) return false;
 
-  return text.includes(normalized);
+  const phrasePattern = normalized.split(/\s+/).map(escapeRegex).join('\\s+');
+  const pattern = new RegExp(`(^|[^a-z0-9])${phrasePattern}(?=$|[^a-z0-9])`);
+  return pattern.test(text);
 }
 
 function hasSymbol(text: string, symbol: string): boolean {
@@ -57,19 +61,30 @@ function hasSymbol(text: string, symbol: string): boolean {
   return pattern.test(text);
 }
 
-function contextAliases(entity: OpportunityContextEntity): string[] {
-  const aliases = [entity.related_name];
+interface ContextAlias {
+  value: string;
+  requireContextTerms: boolean;
+}
+
+function contextAliases(entity: OpportunityContextEntity): ContextAlias[] {
+  const aliases: ContextAlias[] = [
+    { value: entity.related_name, requireContextTerms: false },
+  ];
 
   if (entity.related_symbol) {
-    aliases.push(entity.related_symbol);
+    aliases.push({ value: entity.related_symbol, requireContextTerms: false });
   }
 
   const firstToken = entity.related_name.split(/\s+/)[0];
   if (firstToken && firstToken.length >= 3) {
-    aliases.push(firstToken);
+    aliases.push({ value: firstToken, requireContextTerms: true });
   }
 
   return aliases;
+}
+
+function hasRequiredContextTerms(text: string): boolean {
+  return CONTEXT_ALIAS_TERMS.some((term) => hasPhrase(text, term));
 }
 
 function unique(values: string[]): string[] {
@@ -103,9 +118,17 @@ export function extract_context_matches(
   return context
     .filter((entity) => entity.is_active && activeCoreSymbols.has(entity.core_symbol))
     .filter((entity) =>
-      contextAliases(entity).some((alias) =>
-        entity.related_symbol === alias ? hasSymbol(text, alias) : hasPhrase(text, alias),
-      ),
+      contextAliases(entity).some((alias) => {
+        const matchedAlias =
+          entity.related_symbol === alias.value
+            ? hasSymbol(text, alias.value)
+            : hasPhrase(text, alias.value);
+
+        return (
+          matchedAlias &&
+          (!alias.requireContextTerms || hasRequiredContextTerms(text))
+        );
+      }),
     )
     .map((entity) => ({
       core_symbol: entity.core_symbol,
@@ -122,6 +145,7 @@ export function filter_news_by_watchlist<T extends NewsWithHash>(
   context: OpportunityContextEntity[],
 ): Array<FilteredNews<T>> {
   const activeCore = coreWatchlist.filter((core) => core.is_active);
+  const activeThemes = new Set(activeCore.map((core) => core.theme));
 
   return newsItems.flatMap((item) => {
     const text = searchableText(item);
@@ -130,7 +154,10 @@ export function filter_news_by_watchlist<T extends NewsWithHash>(
       .map((core) => core.symbol);
     const matchedContext = extract_context_matches(item, activeCore, context);
     const matchedThemes = Object.entries(THEME_KEYWORDS)
-      .filter(([, keywords]) => keywords.some((keyword) => hasPhrase(text, keyword)))
+      .filter(
+        ([theme, keywords]) =>
+          activeThemes.has(theme) && keywords.some((keyword) => hasPhrase(text, keyword)),
+      )
       .map(([theme]) => theme);
     const themeCoreHits = activeCore
       .filter((core) => matchedThemes.includes(core.theme))
