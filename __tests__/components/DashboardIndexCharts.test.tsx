@@ -49,7 +49,7 @@ beforeEach(() => {
   global.fetch = jest.fn((url: string) =>
     Promise.resolve({
       ok: true,
-      json: async () => chart(url.includes('SPX') ? 'SPX' : 'NDX'),
+      json: async () => chart(url.includes('SPY') ? 'SPY' : 'QQQ'),
     }),
   ) as jest.Mock;
 });
@@ -63,21 +63,21 @@ describe('DashboardIndexCharts', () => {
     render(<DashboardIndexCharts />);
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith('/api/chart/NDX?range=3m', {
+      expect(global.fetch).toHaveBeenCalledWith('/api/chart/QQQ?range=3m', {
         cache: 'no-store',
       });
-      expect(global.fetch).toHaveBeenCalledWith('/api/chart/SPX?range=3m', {
+      expect(global.fetch).toHaveBeenCalledWith('/api/chart/SPY?range=3m', {
         cache: 'no-store',
       });
     });
 
-    expect(screen.getByText('NDX')).toBeInTheDocument();
-    expect(screen.getByText('SPX')).toBeInTheDocument();
-    expect(await screen.findByTestId('chart-NDX')).toHaveAttribute(
+    expect(screen.getByText('QQQ')).toBeInTheDocument();
+    expect(screen.getByText('SPY')).toBeInTheDocument();
+    expect(await screen.findByTestId('chart-QQQ')).toHaveAttribute(
       'data-height',
       '340',
     );
-    expect(await screen.findByTestId('chart-SPX')).toHaveAttribute(
+    expect(await screen.findByTestId('chart-SPY')).toHaveAttribute(
       'data-compact',
       'true',
     );

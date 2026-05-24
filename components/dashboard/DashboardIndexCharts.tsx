@@ -6,8 +6,8 @@ import { KLineChart } from '@/components/chart/KLineChart';
 import type { ChartApiResponse } from '@/types';
 
 const INDEX_CHARTS = [
-  { symbol: 'NDX', title: '纳指 K线' },
-  { symbol: 'SPX', title: '标普500 K线' },
+  { symbol: 'QQQ', title: '纳指 K线 (QQQ)' },
+  { symbol: 'SPY', title: '标普500 K线 (SPY)' },
 ] as const;
 
 type IndexSymbol = (typeof INDEX_CHARTS)[number]['symbol'];
