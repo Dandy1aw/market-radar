@@ -133,9 +133,9 @@ CREATE TABLE IF NOT EXISTS watchlist_core (
   id BIGSERIAL PRIMARY KEY,
   symbol TEXT NOT NULL,
   name TEXT NOT NULL,
-  market TEXT NOT NULL,
+  market TEXT NOT NULL CHECK (market IN ('US', 'CN')),
   exchange TEXT,
-  asset_type TEXT NOT NULL,
+  asset_type TEXT NOT NULL CHECK (asset_type IN ('index', 'etf', 'stock', 'sector')),
   theme TEXT NOT NULL,
   priority INT NOT NULL DEFAULT 1,
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -206,9 +206,7 @@ CREATE TABLE IF NOT EXISTS opportunity_decision (
   symbol TEXT NOT NULL,
   market TEXT NOT NULL,
   company_name TEXT NOT NULL,
-  asset_type TEXT NOT NULL CHECK (asset_type IN (
-    'index', 'etf', 'stock', 'sector', 'fund', 'company', 'private_company'
-  )),
+  asset_type TEXT NOT NULL CHECK (asset_type IN ('index', 'etf', 'stock', 'sector')),
   theme TEXT NOT NULL,
   decision_level TEXT NOT NULL CHECK (decision_level IN (
     'small_probe',

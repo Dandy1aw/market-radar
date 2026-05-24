@@ -10,12 +10,6 @@ export type OpportunityDecisionLevel =
 
 export type OpportunityDirection = 'positive' | 'neutral' | 'negative' | 'mixed';
 
-export type OpportunityIngestionAssetType =
-  | AssetType
-  | 'fund'
-  | 'company'
-  | 'private_company';
-
 export interface OpportunityCoreTarget {
   id: number;
   symbol: string;
@@ -241,7 +235,7 @@ export interface PersistedOpportunityDecision {
   symbol: string;
   market: Market;
   company_name: string;
-  asset_type: OpportunityIngestionAssetType;
+  asset_type: AssetType;
   theme: string;
   decision_level: OpportunityDecisionLevel;
   total_score: number;
