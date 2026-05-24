@@ -20,8 +20,6 @@ const THEME_KEYWORDS: Record<string, string[]> = {
   'Nasdaq 100 beta': ['nasdaq', 'mega cap', 'growth stocks'],
 };
 
-const CONTEXT_ALIAS_TERMS = ['hbm', 'dram', 'memory', 'certification', 'supply'];
-
 export interface ContextMatch {
   core_symbol: string;
   related_symbol: string | null;
@@ -83,8 +81,11 @@ function contextAliases(entity: OpportunityContextEntity): ContextAlias[] {
   return aliases;
 }
 
-function hasRequiredContextTerms(text: string): boolean {
-  return CONTEXT_ALIAS_TERMS.some((term) => hasPhrase(text, term));
+function coreThemeMatches(text: string, core: OpportunityCoreTarget | undefined): boolean {
+  if (!core?.is_active) return false;
+
+  const themeKeywords = THEME_KEYWORDS[core.theme] ?? [];
+  return themeKeywords.some((keyword) => hasPhrase(text, keyword));
 }
 
 function unique(values: string[]): string[] {
@@ -111,14 +112,17 @@ export function extract_context_matches(
   context: OpportunityContextEntity[],
 ): ContextMatch[] {
   const text = searchableText(news);
-  const activeCoreSymbols = new Set(
-    coreWatchlist.filter((core) => core.is_active).map((core) => core.symbol),
+  const activeCoreBySymbol = new Map(
+    coreWatchlist
+      .filter((core) => core.is_active)
+      .map((core) => [core.symbol, core] as const),
   );
 
   return context
-    .filter((entity) => entity.is_active && activeCoreSymbols.has(entity.core_symbol))
+    .filter((entity) => entity.is_active && activeCoreBySymbol.has(entity.core_symbol))
     .filter((entity) =>
       contextAliases(entity).some((alias) => {
+        const core = activeCoreBySymbol.get(entity.core_symbol);
         const matchedAlias =
           entity.related_symbol === alias.value
             ? hasSymbol(text, alias.value)
@@ -126,7 +130,7 @@ export function extract_context_matches(
 
         return (
           matchedAlias &&
-          (!alias.requireContextTerms || hasRequiredContextTerms(text))
+          (!alias.requireContextTerms || coreThemeMatches(text, core))
         );
       }),
     )

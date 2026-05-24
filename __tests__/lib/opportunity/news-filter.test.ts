@@ -75,6 +75,57 @@ describe('opportunity news filtering', () => {
     );
   });
 
+  it('does not match weak context alias with generic supply language alone', () => {
+    const matches = extract_context_matches(
+      news('Samsung phone supply constraints ease'),
+      seedCoreWatchlist,
+      seedContext,
+    );
+
+    expect(matches).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          core_symbol: 'MU',
+          related_name: 'Samsung Memory',
+        }),
+      ]),
+    );
+  });
+
+  it('matches weak context alias when the related core theme also matches', () => {
+    const matches = extract_context_matches(
+      news('Samsung HBM certification delay'),
+      seedCoreWatchlist,
+      seedContext,
+    );
+
+    expect(matches).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          core_symbol: 'MU',
+          related_name: 'Samsung Memory',
+        }),
+      ]),
+    );
+  });
+
+  it('matches full context entity names without weak alias theme gating', () => {
+    const matches = extract_context_matches(
+      news('Samsung Memory expands HBM supply'),
+      seedCoreWatchlist,
+      seedContext,
+    );
+
+    expect(matches).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          core_symbol: 'MU',
+          related_name: 'Samsung Memory',
+        }),
+      ]),
+    );
+  });
+
   it('does not match theme keywords inside longer unrelated tokens', () => {
     const result = filter_news_by_watchlist(
       [news('Chipotle expands mobile ordering rewards')],
