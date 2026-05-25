@@ -92,8 +92,9 @@ export function OpportunityCard({ card }: OpportunityCardProps) {
       </div>
 
       {(() => {
-        const items = card.evidence_events.length > 0
-          ? card.evidence_events.map(e => e.event_summary).filter(Boolean)
+        const eventSummaries = card.evidence_events.map(e => e.event_summary).filter(Boolean);
+        const items = eventSummaries.length > 0
+          ? eventSummaries
           : card.evidence_news.map(n => n.title);
         if (items.length === 0) return null;
         return (
