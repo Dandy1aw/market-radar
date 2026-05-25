@@ -202,7 +202,7 @@ describe('opportunity decisions', () => {
     expect(muCard?.risk_factors).toEqual(['20日已涨15%，短期存在获利回吐风险']);
   });
 
-  it('falls back to template watch_conditions when synthesizedBySymbol is absent', () => {
+  it('returns empty watch_conditions when synthesizedBySymbol is absent', () => {
     const cards = buildOpportunityCards({
       coreTargets: seedCoreWatchlist,
       context: seedContext,
@@ -212,7 +212,7 @@ describe('opportunity decisions', () => {
     });
     const muCard = cards.find(card => card.symbol === 'MU');
 
-    expect(muCard?.watch_conditions.length).toBeGreaterThan(0);
+    expect(muCard?.watch_conditions).toEqual([]);
   });
 
   it('does not place risk-high pullback-like cards in pullback candidates', () => {

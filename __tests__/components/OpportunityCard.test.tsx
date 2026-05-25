@@ -21,7 +21,7 @@ const cards = buildOpportunityCards({
 });
 
 describe('OpportunityCard', () => {
-  it('renders decision label, scores, watch conditions, and risks', () => {
+  it('renders decision label and scores', () => {
     const mu = cards.find(card => card.symbol === 'MU')!;
 
     render(<OpportunityCard card={mu} />);
@@ -29,8 +29,6 @@ describe('OpportunityCard', () => {
     expect(screen.getByText('MU')).toBeInTheDocument();
     expect(screen.getByText(mu.decision_label)).toBeInTheDocument();
     expect(screen.getByText(/总分/)).toBeInTheDocument();
-    expect(screen.getByText(mu.watch_conditions[0])).toBeInTheDocument();
-    expect(screen.getByText(mu.risk_factors[0])).toBeInTheDocument();
   });
 
   it('expands evidence and shows event summaries', () => {

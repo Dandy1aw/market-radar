@@ -153,8 +153,8 @@ export function buildOpportunityCards({
         decision_label: opportunityDecisionLabels[decision_level],
         ...scores,
         summary: buildSummary(target, decision_level, scores),
-        watch_conditions: synthesized?.watch_conditions ?? buildWatchConditions(indicator, evidenceEvents),
-        risk_factors: synthesized?.risk_factors ?? buildRiskFactors(indicator, evidenceEvents, scores),
+        watch_conditions: synthesized?.watch_conditions ?? buildWatchConditions(),
+        risk_factors: synthesized?.risk_factors ?? buildRiskFactors(),
         evidence_events: evidenceEvents,
         evidence_news: evidenceNews,
         updated_at: getLatestTimestamp(target, evidenceEvents, evidenceNews),
@@ -234,56 +234,12 @@ function buildSummary(
   return `${target.symbol} ${opportunityDecisionLabels[decisionLevel]}：新闻 ${scores.news_score}，位置 ${scores.price_position_score}，风险 ${scores.risk_score}。`;
 }
 
-function buildWatchConditions(
-  indicator: OpportunityIndicatorSnapshot,
-  events: OpportunityCompanyEvent[],
-): string[] {
-  const conditions = [
-    '跟踪后续新闻是否强化当前主题',
-    '观察价格能否维持在关键均线附近',
-  ];
-
-  if (indicator.volume_ratio != null && indicator.volume_ratio >= 1.25) {
-    conditions.push('确认放量后是否继续承接');
-  }
-
-  if (events.length > 0) {
-    conditions.push('复核事件证据是否出现反向变化');
-  }
-
-  return conditions;
+function buildWatchConditions(): string[] {
+  return [];
 }
 
-function buildRiskFactors(
-  indicator: OpportunityIndicatorSnapshot,
-  events: OpportunityCompanyEvent[],
-  scores: OpportunityScores,
-): string[] {
-  const risks: string[] = [];
-
-  if (scores.risk_score >= 75) {
-    risks.push('综合风险分过高');
-  }
-
-  if (
-    indicator.pct_change_20d != null &&
-    indicator.pct_change_20d >= 12
-  ) {
-    risks.push('20日涨幅偏高');
-  }
-
-  if (
-    indicator.pct_from_ma500 != null &&
-    indicator.pct_from_ma500 >= 25
-  ) {
-    risks.push('距离500日均线偏远');
-  }
-
-  if (events.some(event => event.event_direction === 'negative')) {
-    risks.push('存在负向事件');
-  }
-
-  return risks.length > 0 ? risks : ['暂无突出风险，继续观察'];
+function buildRiskFactors(): string[] {
+  return [];
 }
 
 function getLatestTimestamp(
