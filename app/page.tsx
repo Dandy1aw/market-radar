@@ -8,6 +8,9 @@ import { DcaSuggestion } from '@/components/dashboard/DcaSuggestion';
 import { DailyReportCard } from '@/components/dashboard/DailyReportCard';
 import { OpportunityCard } from '@/components/opportunity/OpportunityCard';
 import { OpportunitySummaryBar } from '@/components/opportunity/OpportunitySummaryBar';
+import { CnNewsSummaryBar } from '@/components/cn-news/CnNewsSummaryBar';
+import { CnNewsCard } from '@/components/cn-news/CnNewsCard';
+import { mockCnNewsData } from '@/lib/cn-news/mock';
 import { getOpportunityData } from '@/lib/supabase/opportunity';
 import type { DashboardData } from '@/types';
 
@@ -54,6 +57,18 @@ export default async function DashboardPage() {
           </div>
         );
       })()}
+
+      <section>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--muted)] mb-3">
+          A股资讯信号
+        </h2>
+        <CnNewsSummaryBar data={mockCnNewsData} />
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-2 mt-3">
+          {mockCnNewsData.cards.map(card => (
+            <CnNewsCard key={card.symbol} card={card} />
+          ))}
+        </div>
+      </section>
 
       <RecommendationSection title="A股板块" emoji="🇨🇳" variant="info" items={data.cn_sectors} />
 
