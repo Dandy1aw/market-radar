@@ -9,6 +9,19 @@ import akshare as ak
 import pandas as pd
 
 
+def _str_or_none(val: Any) -> str | None:
+    if val is None:
+        return None
+    try:
+        import pandas as pd
+        if pd.isna(val):
+            return None
+    except (TypeError, ValueError):
+        pass
+    s = str(val).strip()
+    return s if s else None
+
+
 def normalize_announcement_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     seen: set[str] = set()
     result = []
@@ -56,10 +69,10 @@ def fetch_cninfo_announcements(
     for _, r in df.iterrows():
         rows.append({
             'symbol': str(r.get('代码', r.get('symbol', symbol))),
-            'name': str(r.get('简称', r.get('name', ''))),
+            'name': _str_or_none(r.get('简称', r.get('name', ''))),
             'title': str(r.get('公告标题', r.get('title', ''))),
-            'type': str(r.get('公告类型', r.get('type', ''))),
-            'url': str(r.get('链接', r.get('url', ''))),
-            'published_at': str(r.get('公告日期', r.get('date', ''))),
+            'type': _str_or_none(r.get('公告类型', r.get('type', ''))),
+            'url': _str_or_none(r.get('链接', r.get('url', ''))),
+            'published_at': _str_or_none(r.get('公告日期', r.get('date', ''))),
         })
     return rows

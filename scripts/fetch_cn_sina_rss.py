@@ -27,7 +27,8 @@ def normalize_rss_entries(entries: list[dict[str, Any]]) -> list[dict[str, Any]]
     result = []
     for entry in entries:
         title = str(entry.get('title', ''))
-        h = hashlib.md5(title.encode()).hexdigest()
+        source_str = str(entry.get('link', ''))
+        h = hashlib.md5(f"rss:{source_str}:{title}".encode()).hexdigest()
         if h in seen:
             continue
         seen.add(h)

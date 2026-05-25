@@ -8,6 +8,7 @@ import os
 import time
 from datetime import datetime, timedelta
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
 from supabase import create_client, Client
@@ -68,9 +69,9 @@ def upsert_raw_cn_announcements(client: Client, rows: list[dict[str, Any]]) -> i
 
 
 def get_date_range() -> tuple[str, str]:
-    today = datetime.now()
-    yesterday = today - timedelta(days=1)
-    return yesterday.strftime('%Y%m%d'), today.strftime('%Y%m%d')
+    today = datetime.now(ZoneInfo('Asia/Shanghai'))
+    three_days_ago = today - timedelta(days=3)
+    return three_days_ago.strftime('%Y%m%d'), today.strftime('%Y%m%d')
 
 
 def main() -> dict[str, int]:

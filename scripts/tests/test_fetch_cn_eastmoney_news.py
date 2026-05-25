@@ -29,7 +29,8 @@ def test_normalize_eastmoney_news_deduplicates_by_hash():
     ]
     result = normalize_news_rows(rows)
     assert len(result) == 1
-    assert result[0]['hash'] == hashlib.md5('中芯国际 Q1 业绩增长'.encode()).hexdigest()
+    expected_hash = hashlib.md5('688981:东方财富:中芯国际 Q1 业绩增长'.encode()).hexdigest()
+    assert result[0]['hash'] == expected_hash
     assert result[0]['related_symbol'] == '688981'
     assert result[0]['confidence_level'] == 'medium'
     assert result[0]['source_type'] == 'company_news'

@@ -10,12 +10,27 @@ import akshare as ak
 import pandas as pd
 
 
+def _str_or_none(val: Any) -> str | None:
+    if val is None:
+        return None
+    try:
+        import pandas as pd
+        if pd.isna(val):
+            return None
+    except (TypeError, ValueError):
+        pass
+    s = str(val).strip()
+    return s if s else None
+
+
 def normalize_news_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     seen: set[str] = set()
     result = []
     for row in rows:
         title = str(row.get('title', ''))
-        h = hashlib.md5(title.encode()).hexdigest()
+        source_str = str(row.get('source', '东方财富'))
+        symbol_str = str(row.get('symbol', ''))
+        h = hashlib.md5(f"{symbol_str}:{source_str}:{title}".encode()).hexdigest()
         if h in seen:
             continue
         seen.add(h)
@@ -48,10 +63,10 @@ def fetch_eastmoney_news(symbol: str) -> list[dict[str, Any]]:
     for _, r in df.iterrows():
         rows.append({
             'title': str(r.get('新闻标题', r.get('title', ''))),
-            'content': str(r.get('新闻内容', r.get('content', ''))),
-            'published_at': str(r.get('发布时间', r.get('published_at', ''))),
+            'content': _str_or_none(r.get('新闻内容', r.get('content', ''))),
+            'published_at': _str_or_none(r.get('发布时间', r.get('published_at', ''))),
             'source': str(r.get('文章来源', r.get('source', '东方财富'))),
-            'url': str(r.get('新闻链接', r.get('url', ''))),
+            'url': _str_or_none(r.get('新闻链接', r.get('url', ''))),
             'symbol': symbol,
         })
     return rows
