@@ -28,6 +28,7 @@ describe('opportunity ingestion supabase mapping', () => {
         company_name: 'Micron Technology',
         asset_type: 'stock',
         theme: 'HBM / memory cycle',
+        notes: null,
         decision_level: 'strong_watch',
         total_score: 75,
         news_score: 85,

@@ -6,7 +6,7 @@ import { EtfGrid } from '@/components/dashboard/EtfGrid';
 import { RecommendationSection } from '@/components/dashboard/RecommendationSection';
 import { DcaSuggestion } from '@/components/dashboard/DcaSuggestion';
 import { DailyReportCard } from '@/components/dashboard/DailyReportCard';
-import { OpportunityGroup } from '@/components/opportunity/OpportunityGroup';
+import { OpportunityCard } from '@/components/opportunity/OpportunityCard';
 import { OpportunitySummaryBar } from '@/components/opportunity/OpportunitySummaryBar';
 import { getOpportunityData } from '@/lib/supabase/opportunity';
 import type { DashboardData } from '@/types';
@@ -39,10 +39,21 @@ export default async function DashboardPage() {
       <EtfGrid etfs={data.etf_cards} />
 
       <OpportunitySummaryBar data={opportunity} />
-      <OpportunityGroup groupKey="pullback-candidate" title="回调买入候选" cards={opportunity.groups.pullback_candidate} />
-      <OpportunityGroup groupKey="strong-watch" title="继续强关注" cards={opportunity.groups.strong_watch} />
-      <OpportunityGroup groupKey="risk-high" title="风险过高" cards={opportunity.groups.risk_high} />
-      <OpportunityGroup groupKey="other" title="其他观察" cards={opportunity.groups.other} />
+      {(() => {
+        const cards = [
+          ...opportunity.groups.strong_watch,
+          ...opportunity.groups.pullback_candidate,
+          ...opportunity.groups.risk_high,
+          ...opportunity.groups.other,
+        ].sort((a, b) => b.total_score - a.total_score);
+        return (
+          <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+            {cards.map(card => (
+              <OpportunityCard key={card.symbol} card={card} />
+            ))}
+          </div>
+        );
+      })()}
 
       <RecommendationSection title="A股板块" emoji="🇨🇳" variant="info" items={data.cn_sectors} />
 

@@ -222,6 +222,7 @@ describe('opportunity decisions', () => {
       asset_type: 'stock',
       market: 'US',
       theme: 'synthetic regression',
+      notes: null,
       decision_level: 'risk_high',
       decision_label: opportunityDecisionLabels.risk_high,
       total_score: 78,

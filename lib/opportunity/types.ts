@@ -238,6 +238,7 @@ export interface PersistedOpportunityDecision {
   company_name: string;
   asset_type: AssetType;
   theme: string;
+  notes: string | null;
   decision_level: OpportunityDecisionLevel;
   total_score: number;
   news_score: number;
