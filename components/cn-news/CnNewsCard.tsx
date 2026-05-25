@@ -32,6 +32,24 @@ const sourceTypeLabel: Record<string, string> = {
   rss: 'RSS',
 };
 
+const sourceTypeStyle: Record<string, string> = {
+  announcement: 'border-amber-400/30 bg-amber-400/10 text-amber-400',
+  company_news: 'border-sky-400/30 bg-sky-400/10 text-sky-400',
+  rss: 'border-gray-400/30 bg-gray-400/10 text-gray-400',
+};
+
+const confidenceTextStyle: Record<CnConfidenceLevel, string> = {
+  high: 'text-amber-400',
+  medium: 'text-sky-400',
+  low: 'text-gray-400',
+};
+
+const confidenceLabel: Record<CnConfidenceLevel, string> = {
+  high: '高',
+  medium: '中',
+  low: '低',
+};
+
 interface CnNewsCardProps {
   card: CnNewsCardData;
 }
@@ -61,7 +79,7 @@ export function CnNewsCard({ card }: CnNewsCardProps) {
               {directionLabel[card.event_direction]}
             </span>
             <span
-              className={`rounded-full border px-2 py-0.5 text-xs font-semibold ${confidenceStyle[card.confidence_level]}`}
+              className={`rounded-full border px-2 py-0.5 text-xs font-semibold ${sourceTypeStyle[card.source_type] ?? confidenceStyle[card.confidence_level]}`}
             >
               {sourceTypeLabel[card.source_type] ?? card.source_type}
             </span>
@@ -70,8 +88,8 @@ export function CnNewsCard({ card }: CnNewsCardProps) {
         </div>
         <div className="text-left sm:text-right">
           <p className="text-xs text-[var(--muted)]">可信度</p>
-          <p className={`text-xl font-semibold ${{ high: 'text-amber-400', medium: 'text-sky-400', low: 'text-gray-400' }[card.confidence_level]}`}>
-            {{ high: '高', medium: '中', low: '低' }[card.confidence_level]}
+          <p className={`text-xl font-semibold ${confidenceTextStyle[card.confidence_level]}`}>
+            {confidenceLabel[card.confidence_level]}
           </p>
         </div>
       </div>
@@ -81,20 +99,20 @@ export function CnNewsCard({ card }: CnNewsCardProps) {
       <div className="mt-3 flex flex-wrap gap-2">
         <Chip label="来源" value={card.source_label} />
         <Chip label="事件" value={card.event_type} />
-        <Chip label="重要性" value={card.importance_score} />
+        <Chip label="重要性" value={card.importance_score.toFixed(1)} />
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         <div>
           <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--muted)]">后续观察</p>
           <ul className="space-y-1 text-sm text-[var(--text)]">
-            {card.watch_points.map((p, i) => <li key={i}>• {p}</li>)}
+            {card.watch_points.map((p) => <li key={p}>• {p}</li>)}
           </ul>
         </div>
         <div>
           <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--muted)]">风险提示</p>
           <ul className="space-y-1 text-sm text-[var(--text)]">
-            {card.risk_notes.map((r, i) => <li key={i}>• {r}</li>)}
+            {card.risk_notes.map((r) => <li key={r}>• {r}</li>)}
           </ul>
         </div>
       </div>
@@ -116,8 +134,8 @@ export function CnNewsCard({ card }: CnNewsCardProps) {
           </button>
           {expanded && (
             <ul className="mt-3 space-y-1">
-              {card.evidence.map((e, i) => (
-                <li key={i} className="text-sm text-[var(--muted)]">{e}</li>
+              {card.evidence.map((e) => (
+                <li key={e} className="text-sm text-[var(--muted)]">{e}</li>
               ))}
             </ul>
           )}
