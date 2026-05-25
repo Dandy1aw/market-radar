@@ -1,0 +1,48 @@
+name: Fetch CN News
+
+on:
+  schedule:
+    - cron: "0 1,5,9,13 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  fetch-cn-news:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements-cn.txt
+
+      - name: Fetch CN raw news and announcements
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          MAX_CN_NEWS_PER_RUN: "100"
+        run: python scripts/fetch_cn_free_sources.py
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Process CN news with LLM
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          MAX_CN_DEEPSEEK_CALLS_PER_RUN: "20"
+          CN_NEWS_LOOKBACK_HOURS: "8"
+        run: npx tsx scripts/process-cn-news.ts
