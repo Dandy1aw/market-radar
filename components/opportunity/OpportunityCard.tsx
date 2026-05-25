@@ -48,6 +48,9 @@ export function OpportunityCard({ card }: OpportunityCardProps) {
             </span>
           </div>
           <p className="mt-1 text-xs text-[var(--muted)]">{card.theme}</p>
+          {card.notes && (
+            <p className="mt-0.5 text-xs text-[var(--muted)] opacity-60">{card.notes}</p>
+          )}
         </div>
         <div className="text-left sm:text-right">
           <p className="text-xs text-[var(--muted)]">总分</p>

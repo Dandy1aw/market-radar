@@ -149,6 +149,7 @@ export function buildOpportunityCards({
         asset_type: target.asset_type,
         market: target.market,
         theme: target.theme,
+        notes: target.notes ?? null,
         decision_level,
         decision_label: opportunityDecisionLabels[decision_level],
         ...scores,

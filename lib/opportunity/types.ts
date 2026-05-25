@@ -112,6 +112,7 @@ export interface OpportunityCardData extends OpportunityScores {
   asset_type: AssetType;
   market: Market;
   theme: string;
+  notes: string | null;
   decision_level: OpportunityDecisionLevel;
   decision_label: string;
   summary: string;
