@@ -2,7 +2,7 @@ name: Fetch Opportunity News
 
 on:
   schedule:
-    - cron: '0 8,16 * * 1-5'   # 08:00/16:00 UTC = 16:00/00:00 BJ
+    - cron: '0 4,8,12,16,20 * * 1-5'   # 04:00/08:00/12:00/16:00/20:00 UTC = 12:00/16:00/20:00/00:00/04:00 BJ
   workflow_dispatch:
 
 jobs:
