@@ -33,12 +33,12 @@ describe('OpportunityCard', () => {
     expect(screen.getByText(mu.risk_factors[0])).toBeInTheDocument();
   });
 
-  it('expands evidence news', () => {
+  it('expands evidence and shows event summaries', () => {
     const mu = cards.find(card => card.symbol === 'MU')!;
 
     render(<OpportunityCard card={mu} />);
     fireEvent.click(screen.getByRole('button', { name: /证据/ }));
 
-    expect(screen.getByText(/Micron highlights sustained HBM/)).toBeInTheDocument();
+    expect(screen.getByText(/HBM demand remains strong/)).toBeInTheDocument();
   });
 });
