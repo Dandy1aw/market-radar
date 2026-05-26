@@ -82,11 +82,12 @@ interface ExtractedCnEvent {
 }
 
 async function loadCnTargets(client: ReturnType<typeof adminClient>): Promise<CnTarget[]> {
-  const { data } = await client
+  const { data, error } = await client
     .from('watchlist_core')
     .select('symbol,name,theme,notes')
     .eq('market', 'CN')
     .eq('is_active', true);
+  if (error) throw new Error(`[loadCnTargets] ${error.message}`);
   return (data ?? []) as CnTarget[];
 }
 
@@ -94,12 +95,13 @@ async function loadRecentCnNews(
   client: ReturnType<typeof adminClient>,
   sinceIso: string,
 ): Promise<CnRawNews[]> {
-  const { data } = await client
+  const { data, error } = await client
     .from('raw_cn_news')
     .select('id,source,source_type,title,summary,content,url,published_at,related_symbol,confidence_level,raw_json')
     .gte('fetched_at', sinceIso)
     .order('published_at', { ascending: false })
     .limit(200);
+  if (error) throw new Error(`[loadRecentCnNews] ${error.message}`);
   return (data ?? []) as CnRawNews[];
 }
 
@@ -107,12 +109,13 @@ async function loadRecentCnAnnouncements(
   client: ReturnType<typeof adminClient>,
   sinceIso: string,
 ): Promise<CnAnnouncement[]> {
-  const { data } = await client
+  const { data, error } = await client
     .from('raw_cn_announcement')
     .select('id,symbol,name,title,announcement_type,url,published_at,confidence_level')
     .gte('fetched_at', sinceIso)
     .order('published_at', { ascending: false })
     .limit(100);
+  if (error) throw new Error(`[loadRecentCnAnnouncements] ${error.message}`);
   return (data ?? []) as CnAnnouncement[];
 }
 
@@ -298,7 +301,13 @@ async function main(): Promise<void> {
       if (llmCallCount >= MAX_LLM_CALLS) break;
       llmCallCount++;
 
-      const event = await extractCnEvent(item.text, item.source, item.confidence, targets);
+      let event: ExtractedCnEvent | null;
+      try {
+        event = await extractCnEvent(item.text, item.source, item.confidence, targets);
+      } catch (err) {
+        console.error(`[process-cn-news] extractCnEvent failed for ${target.symbol}:`, err);
+        continue;
+      }
       if (!event || !event.is_relevant) continue;
 
       const eventId = await insertCnCompanyEvent(

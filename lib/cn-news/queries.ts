@@ -83,10 +83,11 @@ export async function getCnNewsData(): Promise<CnNewsApiResponse> {
 
   let events: EventRow[] = [];
   if (allEventIds.length > 0) {
-    const { data: evData } = await client
+    const { data: evData, error: evErr } = await client
       .from('company_event')
       .select('id,event_direction,importance_score,event_summary,raw_llm_json')
       .in('id', allEventIds);
+    if (evErr) throw evErr;
     events = (evData ?? []) as EventRow[];
   }
 
