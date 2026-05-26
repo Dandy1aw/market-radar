@@ -129,11 +129,11 @@ function buildPrompt(
     .map(t => `${t.symbol} ${t.name} [${t.theme}]`)
     .join('\n');
   return PROMPT_TEMPLATE
-    .replace('{{watchlist_core}}', watchlistSummary)
-    .replace('{{theme_keywords}}', THEME_KEYWORDS.join(', '))
-    .replace('{{document_text}}', documentText.slice(0, 3000))
-    .replace('{{source}}', source)
-    .replace('{{confidence_level}}', confidenceLevel);
+    .replaceAll('{{watchlist_core}}', watchlistSummary)
+    .replaceAll('{{theme_keywords}}', THEME_KEYWORDS.join(', '))
+    .replaceAll('{{document_text}}', documentText.slice(0, 3000))
+    .replaceAll('{{source}}', source)
+    .replaceAll('{{confidence_level}}', confidenceLevel);
 }
 
 async function extractCnEvent(
@@ -167,6 +167,8 @@ async function insertCnCompanyEvent(
   event: ExtractedCnEvent,
   evidenceNewsIds: number[],
   model: string,
+  sourceType: string,
+  sourceLabel: string,
 ): Promise<number | null> {
   const row = {
     symbol,
@@ -183,6 +185,8 @@ async function insertCnCompanyEvent(
       ...event,
       cn_event_type: event.cn_event_type,
       cn_confidence_level: event.cn_confidence_level,
+      cn_source_type: sourceType,
+      cn_source_label: sourceLabel,
       watch_points: event.watch_points,
       risk_notes: event.risk_notes,
     },
@@ -249,17 +253,22 @@ async function upsertCnOpportunityDecision(
   };
 
   // No unique constraint on (symbol, market) — delete then insert
-  await client
+  const { error: deleteErr } = await client
     .from('opportunity_decision')
     .delete()
     .eq('symbol', target.symbol)
     .eq('market', 'CN');
+  if (deleteErr) console.error('[upsertCnOpportunityDecision] delete error:', deleteErr.message);
 
   const { error } = await client.from('opportunity_decision').insert(row);
   if (error) console.error('[upsertCnOpportunityDecision]', error.message);
 }
 
 async function main(): Promise<void> {
+  const missingEnv = ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'LLM_API_KEY']
+    .filter(k => !process.env[k]);
+  if (missingEnv.length > 0) throw new Error(`Missing required env vars: ${missingEnv.join(', ')}`);
+
   const client = adminClient();
   const model = getLlmModelName();
 
@@ -278,16 +287,20 @@ async function main(): Promise<void> {
     const relevantNews = allNews.filter(n => n.related_symbol === target.symbol);
     const relevantAnn = allAnnouncements.filter(a => a.symbol === target.symbol);
 
-    const items: Array<{ text: string; source: string; confidence: string; ids: number[] }> = [
+    const items: Array<{ text: string; source: string; source_type: string; source_label: string; confidence: string; ids: number[] }> = [
       ...relevantAnn.map(a => ({
         text: `${a.title}\n${a.announcement_type ?? ''}`,
         source: `巨潮资讯 (${a.announcement_type ?? '公告'})`,
+        source_type: 'announcement',
+        source_label: '巨潮资讯',
         confidence: a.confidence_level,
         ids: [a.id],
       })),
       ...relevantNews.slice(0, 3).map(n => ({
         text: `${n.title}\n${n.summary ?? ''}\n${n.content?.slice(0, 500) ?? ''}`,
         source: n.source,
+        source_type: n.source_type ?? 'company_news',
+        source_label: n.source,
         confidence: n.confidence_level,
         ids: [n.id],
       })),
@@ -317,6 +330,8 @@ async function main(): Promise<void> {
         event,
         item.ids,
         model,
+        item.source_type,
+        item.source_label,
       );
       if (eventId !== null) {
         extractedEvents.push({ id: eventId, event });

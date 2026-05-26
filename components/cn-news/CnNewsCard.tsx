@@ -99,20 +99,20 @@ export function CnNewsCard({ card }: CnNewsCardProps) {
       <div className="mt-3 flex flex-wrap gap-2">
         <Chip label="来源" value={card.source_label} />
         <Chip label="事件" value={card.event_type} />
-        <Chip label="重要性" value={card.importance_score.toFixed(1)} />
+        <Chip label="重要性" value={(card.importance_score ?? 0).toFixed(1)} />
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         <div>
           <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--muted)]">后续观察</p>
           <ul className="space-y-1 text-sm text-[var(--text)]">
-            {card.watch_points.map((p) => <li key={p}>• {p}</li>)}
+            {card.watch_points.map((p, i) => <li key={i}>• {p}</li>)}
           </ul>
         </div>
         <div>
           <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--muted)]">风险提示</p>
           <ul className="space-y-1 text-sm text-[var(--text)]">
-            {card.risk_notes.map((r) => <li key={r}>• {r}</li>)}
+            {card.risk_notes.map((r, i) => <li key={i}>• {r}</li>)}
           </ul>
         </div>
       </div>
@@ -134,8 +134,8 @@ export function CnNewsCard({ card }: CnNewsCardProps) {
           </button>
           {expanded && (
             <ul className="mt-3 space-y-1">
-              {card.evidence.map((e) => (
-                <li key={e} className="text-sm text-[var(--muted)]">{e}</li>
+              {card.evidence.map((e, i) => (
+                <li key={i} className="text-sm text-[var(--muted)]">{e}</li>
               ))}
             </ul>
           )}

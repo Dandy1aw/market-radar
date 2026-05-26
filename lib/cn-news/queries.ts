@@ -20,7 +20,7 @@ interface DecisionRow {
   summary: string;
   watch_conditions: string[];
   risk_factors: string[];
-  evidence_event_ids: number[];
+  evidence_event_ids: number[] | null;
   created_at: string;
 }
 
@@ -47,7 +47,7 @@ function mapEventToCard(
     source_type: (llmJson.cn_source_type ?? 'company_news') as CnSourceType,
     source_label: String(llmJson.cn_source_label ?? '东方财富'),
     event_type: String(llmJson.cn_event_type ?? '资讯'),
-    importance_score: topEvent?.importance_score ?? 0,
+    importance_score: Number(topEvent?.importance_score ?? 0),
     event_summary: decision.summary,
     watch_points: Array.isArray(llmJson.watch_points) ? llmJson.watch_points as string[] : [],
     risk_notes: Array.isArray(llmJson.risk_notes) ? llmJson.risk_notes as string[] : [],
@@ -58,9 +58,15 @@ function mapEventToCard(
   };
 }
 
+const EMPTY_RESPONSE: CnNewsApiResponse = {
+  updated_at: '',
+  summary: { total: 0, positive: 0, negative: 0, high_confidence: 0 },
+  cards: [],
+};
+
 export async function getCnNewsData(): Promise<CnNewsApiResponse> {
   const client = adminClient();
-
+  try {
   const { data: decisions, error: dErr } = await client
     .from('opportunity_decision')
     .select('id,symbol,company_name,theme,decision_level,total_score,summary,watch_conditions,risk_factors,evidence_event_ids,created_at')
@@ -111,4 +117,8 @@ export async function getCnNewsData(): Promise<CnNewsApiResponse> {
     summary,
     cards,
   };
+  } catch (err) {
+    console.error('[getCnNewsData]', err);
+    return { ...EMPTY_RESPONSE, updated_at: new Date().toISOString() };
+  }
 }

@@ -32,6 +32,8 @@ MAX_NEWS_PER_RUN = int(os.getenv('MAX_CN_NEWS_PER_RUN', '100'))
 def get_supabase_client() -> Client:
     url = os.getenv('SUPABASE_URL', '')
     key = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
+    if not url or not key:
+        raise RuntimeError('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY env vars must be set')
     return create_client(url, key)
 
 
