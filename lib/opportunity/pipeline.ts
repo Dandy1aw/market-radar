@@ -140,11 +140,16 @@ function toOpportunityRawNews(news: OpportunityPipelineRawNews): OpportunityRawN
   };
 }
 
+const VALID_DB_RELATION_TYPES = new Set<string>([
+  'competitor', 'supplier', 'customer', 'peer', 'etf_holding', 'industry_signal', 'policy_signal',
+]);
+
 function toCandidateInsert(
   decision: CandidateValidationDecision,
   status: DiscoveredCandidateInsert['status'],
   event: ExtractedOpportunityEvent,
 ): DiscoveredCandidateInsert {
+  const relType = decision.relation_type;
   return {
     name: decision.name,
     symbol: decision.symbol,
@@ -152,7 +157,7 @@ function toCandidateInsert(
     theme: decision.theme,
     discovered_from: 'llm_event_extraction',
     related_to_symbol: decision.related_core_symbol,
-    relation_type: decision.relation_type,
+    relation_type: relType && VALID_DB_RELATION_TYPES.has(relType) ? relType : null,
     reason: decision.reason,
     mention_count: 1,
     importance_score: event.importance_score,

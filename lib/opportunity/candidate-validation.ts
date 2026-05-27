@@ -86,6 +86,8 @@ Evidence news ids: ${evidenceNewsIds.join(', ') || 'none'}
 Source summary:
 ${sourceSummary}
 
+relation_type must be exactly one of: competitor, supplier, customer, peer, etf_holding, industry_signal, policy_signal
+
 Return JSON shape:
 {
   "decision": "add_context",
