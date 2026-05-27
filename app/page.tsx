@@ -10,7 +10,7 @@ import { OpportunityCard } from '@/components/opportunity/OpportunityCard';
 import { OpportunitySummaryBar } from '@/components/opportunity/OpportunitySummaryBar';
 import { CnNewsSummaryBar } from '@/components/cn-news/CnNewsSummaryBar';
 import { CnNewsCard } from '@/components/cn-news/CnNewsCard';
-import { mockCnNewsData } from '@/lib/cn-news/mock';
+import { getCnNewsData } from '@/lib/cn-news/queries';
 import { getOpportunityData } from '@/lib/supabase/opportunity';
 import type { DashboardData } from '@/types';
 
@@ -22,7 +22,7 @@ async function getDashboard(): Promise<DashboardData> {
 }
 
 export default async function DashboardPage() {
-  const [data, opportunity] = await Promise.all([getDashboard(), getOpportunityData()]);
+  const [data, opportunity, cnNews] = await Promise.all([getDashboard(), getOpportunityData(), getCnNewsData()]);
 
   return (
     <div className="space-y-6">
@@ -62,9 +62,9 @@ export default async function DashboardPage() {
         <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--muted)] mb-3">
           A股资讯信号
         </h2>
-        <CnNewsSummaryBar data={mockCnNewsData} />
+        <CnNewsSummaryBar data={cnNews} />
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-2 mt-3">
-          {mockCnNewsData.cards.map(card => (
+          {cnNews.cards.map(card => (
             <CnNewsCard key={card.symbol} card={card} />
           ))}
         </div>
